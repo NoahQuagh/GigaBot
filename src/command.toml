@@ -1,0 +1,12 @@
+[bot]
+description="Info sur le bot"
+[ping]
+description="Pings du GigaBot"
+[paul]
+description="Info sur paul"
+[help]
+description="Aide utilisateur"
+[valo]
+description="Commandes relative à valorant `!man` pour plus de détails"
+[man]
+description="Manuelle utilisateur des commandes du bot"

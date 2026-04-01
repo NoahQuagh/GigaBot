@@ -1,0 +1,27 @@
+[
+  {
+    "version": "1.0.2",
+    "nouveau": [
+      {
+        "nomNouveaute": "Nouvelle commande !new :",
+        "description": "Cette commande permet de découvrir les dernières nouveautés du GigaBot."
+      },
+      {
+        "nomNouveaute": "Améliorations architecturales du système de sauvegarde du bot :",
+        "description": "Le système de stockage est passé d\u0027un format texte brut (.txt) à une structure JSON via la bibliothèque Google Gson. Ce changement abandonne la gestion par lignes concaténées au profit d\u0027une sérialisation d\u0027objets Java.De plus cette structure assure une prévention de la corruption de donnée et une auto-réparation en cas d\u0027erreur"
+      }
+    ],
+    "bug": [
+      {
+        "nomBug": "Conflit de Fuseau Horaire",
+        "description": "Décalage de 2 heures entre l\u0027heure de programmation du rappel d\u0027une game premier et l\u0027exécution réelle du rappel.La cause est que le serveur Oracle Cloud est configuré par défaut sur le fuseau UTC (Londres), tandis que l\u0027utilisateur est en UTC+2 (Paris/Heure d\u0027été).",
+        "resolution": "Synchronisation du serveur en UTC+2 (Paris/Heure d\u0027été)"
+      },
+      {
+        "nomBug": "Corruption et Explosion des fichiers de sauvegarde",
+        "description": "Apparition de milliers de lignes identiques ou de caractères de contrôle parasites (type ^M) dans le fichier de rappel, entraînant un ralentissement critique du bot.Les causes viennent d\u0027abord d\u0027une boucle d\u0027écriture infinie : Présence de processus fantômes écrivant simultanément dans le même fichier.La seconde Cause viens d\u0027un I/O Inefficient : Appel de la méthode de sauvegarde à l\u0027intérieur d\u0027une boucle, provoquant des accès disque trop fréquents et des corruptions de flux.",
+        "resolution": "La sauvegarde est désormais effectuée une seule fois après la complétion de la boucle de traitement en mémoire."
+      }
+    ]
+  }
+]

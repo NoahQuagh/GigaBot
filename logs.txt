@@ -170,3 +170,66 @@
 [01/04/2026 21:30:25] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
 [2026-04-01 21:30:27] USER: noaaaah_493 | CMD: !premier -addteam ningen grdfgd
 [01/04/2026 21:30:27] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.run() >> Code : ERREUR_API
+[01/04/2026 21:53:43] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 21:54:11] USER: noaaaah_493 | CMD: !premier -addplayerteam ningen <@892824373701005325>
+[01/04/2026 21:54:11] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> noaaaah_493 | Code : SYNTAXE_INCORRECTE
+[01/04/2026 21:54:27] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 21:54:33] USER: noaaaah_493 | CMD: !premier -addplayerteam ningen <@892824373701005325>
+[01/04/2026 21:57:03] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 21:57:07] USER: noaaaah_493 | CMD: !premier -addplayerteam ningen <@892824373701005325>
+[01/04/2026 23:01:20] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[01/04/2026 23:01:40] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 23:01:47] USER: noaaaah_493 | CMD: !premier -addplayerteam ningen <@892824373701005325>
+[01/04/2026 23:01:47] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> Code : ECHEC
+[2026-04-01 23:02:31] USER: noaaaah_493 | CMD: !premier -addteam ninger <@892824373701005325>
+[2026-04-01 23:03:14] USER: noaaaah_493 | CMD: !premier -addplayerteam ninger <@892824373701005325>
+[2026-04-01 23:05:32] USER: noaaaah_493 | CMD: !premier -event 01/04/2026 23:36
+[01/04/2026 23:05:32] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.run() >> noaaaah_493 | Code : SYNTAXE_INCORRECTE
+[2026-04-01 23:05:43] USER: noaaaah_493 | CMD: !premier -event 01/04/2026 23:36 ninger
+[01/04/2026 23:05:46] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.lambda$sendInvitationAndListen$4() >> noaaaah_493accept the invitation at 2026-04-01T23:36 in ninger
+[01/04/2026 23:05:48] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.lambda$sendInvitationAndListen$4() >> noaaaah_493accept the invitation at 2026-04-01T23:36 in ninger
+[2026-04-01 23:07:05] USER: noaaaah_493 | CMD: !premier -addplayerteam ninger <@892824373701005325>
+[2026-04-01 23:07:27] USER: noaaaah_493 | CMD: !premier -addplayerteam ninger dgfsfd
+[01/04/2026 23:07:27] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> Code : ECHEC
+[01/04/2026 23:09:08] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 23:10:05] USER: noaaaah_493 | CMD: !premier -addplayerteam test <@892824373701005325>
+[01/04/2026 23:10:05] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> Code : ACCEE_REFUSE
+[01/04/2026 23:10:05] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> Code : ACCEE_REFUSE
+[01/04/2026 23:10:53] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 23:10:58] USER: noaaaah_493 | CMD: !premier -addplayerteam test <@892824373701005325>
+[01/04/2026 23:10:58] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> Code : ACCEE_REFUSE
+[01/04/2026 23:10:58] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> Code : ACCEE_REFUSE
+[01/04/2026 23:12:03] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 23:12:07] USER: noaaaah_493 | CMD: !premier -addplayerteam test <@892824373701005325>
+[01/04/2026 23:12:07] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> Code : ACCEE_REFUSE
+[01/04/2026 23:28:00] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 23:28:31] USER: noaaaah_493 | CMD: !premier -addteam ningen <@892824373701005325>
+[01/04/2026 23:28:31] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.run() >> new team created
+[2026-04-01 23:29:29] USER: noaaaah_493 | CMD: !premier -addplayerteam ningen <@892824373701005325>
+[01/04/2026 23:29:30] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.lambda$run$0() >> noaaaah_493 | Invitation sent to join a team Premier
+[01/04/2026 23:29:33] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.lambda$sendDemande$4() >> noaaaah_493 | accepted the invitation to join the team Premier
+[01/04/2026 23:29:33] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.validerInvitation() >> noaaaah_493 is registered in the team : ningen
+[2026-04-01 23:29:48] USER: noaaaah_493 | CMD: !premier -addplayerteam ningen fds
+[01/04/2026 23:29:48] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> Code : ECHEC : java.util.NoSuchElementException
+[01/04/2026 23:33:32] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 23:33:39] USER: noaaaah_493 | CMD: !premier -addteam ningen <@892824373701005325>
+[01/04/2026 23:33:39] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.run() >> noaaaah_493 | Code : SYNTAXE_INCORRECTE
+[01/04/2026 23:33:56] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[01/04/2026 23:34:04] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 23:34:09] USER: noaaaah_493 | CMD: !premier -addteam ningen
+[01/04/2026 23:34:09] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.run() >> new team created
+[2026-04-01 23:34:38] USER: noaaaah_493 | CMD: !premier -addplayerteam <@892824373701005325>
+[01/04/2026 23:34:38] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> noaaaah_493 | Code : SYNTAXE_INCORRECTE
+[01/04/2026 23:34:50] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 23:35:00] USER: noaaaah_493 | CMD: !premier -addplayerteam <@892824373701005325>
+[01/04/2026 23:35:00] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.lambda$run$0() >> noaaaah_493 | Invitation sent to join a team Premier
+[01/04/2026 23:35:05] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.lambda$sendDemande$4() >> noaaaah_493 | accepted the invitation to join the team Premier
+[01/04/2026 23:35:05] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.validerInvitation() >> noaaaah_493 is registered in the team : <@892824373701005325>
+[01/04/2026 23:37:27] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[2026-04-01 23:37:30] USER: noaaaah_493 | CMD: !premier -addplayerteam <@892824373701005325>
+[01/04/2026 23:37:31] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.lambda$run$0() >> noaaaah_493 | Invitation sent to join a team Premier
+[01/04/2026 23:37:35] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.lambda$sendDemande$4() >> noaaaah_493 | accepted the invitation to join the team Premier
+[01/04/2026 23:37:35] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.validerInvitation() >> noaaaah_493 is registered in the team : ningen
+[2026-04-01 23:38:30] USER: noaaaah_493 | CMD: !premier -addplayerteam fgs
+[01/04/2026 23:38:30] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddPlayerTeam.run() >> Code : ECHEC : java.util.NoSuchElementException
+[01/04/2026 23:39:00] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start

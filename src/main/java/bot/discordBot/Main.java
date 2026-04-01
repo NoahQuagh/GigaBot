@@ -25,7 +25,7 @@ import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class Main {
 
-    private static DiscordApi api;
+    public static DiscordApi api;
     private static ConfigManager configManager;
     public static String version ="1.0.2";
 

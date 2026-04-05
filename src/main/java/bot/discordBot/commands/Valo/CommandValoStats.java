@@ -2,10 +2,15 @@ package bot.discordBot.commands.Valo;
 
 import bot.discordBot.Main;
 import bot.discordBot.commands.CommandValo;
+import bot.discordBot.utils.Exception.ApiException;
+import bot.discordBot.utils.Exception.JoueurException;
+import bot.discordBot.utils.Exception.SyntaxeException;
 import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.Command;
+import bot.discordBot.utils.commands.CommandContext;
+import bot.discordBot.utils.commands.datamanager.DataManager;
+import bot.discordBot.utils.commands.datamanager.DataStructure.CompteValoDiscord;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.event.message.MessageCreateEvent;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -15,7 +20,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
 
+import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
+import static bot.discordBot.utils.Procedure.ApiProcedure.ApiRiotRequete;
+import static bot.discordBot.utils.Procedure.ValoDisProcedure.pseudoValoExist;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandValoStats extends CommandValo {
@@ -23,69 +32,33 @@ public class CommandValoStats extends CommandValo {
     public final static String description;
 
     static {
-        syntaxe = "!valo -stats <nom_du_joueur>#<tag>";
+        syntaxe = "/valo stats <nom_du_joueur>#<tag>";
         description = "Permet d'obtenir les statistiques d'un joueur Valorant.";
     }
 
     @Override
-    public void run(MessageCreateEvent event, Command command, String[] args) {
-        if (args.length != 2) {
-            String name=event.getMessageAuthor().getDisplayName();
-            writeLogFile("logs.txt",name+" | Code : "+ Code.SYNTAXE_INCORRECTE);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("⚠️   Attention :")
-                    .setDescription("Syntaxe incorrecte !")
-                    .addField("Exemple syntaxe:","```!valo -stats bouffeur2pieds#6767```")
-                    .setColor(Color.orange);
-            event.getChannel().sendMessage(embed);
-            return;
-        }
-
-
-        String pseudo = args[1];//pseudo
-        String[] split = pseudo.split("#");
-
-        String name = split[0];//nom
-        String tag = split[1];//tag
-
+    public void run(CommandContext ctx, Command command, String[] args) {
+        if (ctx.isSlash()) ctx.defer();
         try {
-            String url = "https://api.henrikdev.xyz/valorant/v1/stored-matches/eu/"+name+"/"+tag+"?mode=competitive";
+            String pseudoRaw = ctx.isSlash()
+                    ? ctx.getOptionString("pseudotag").orElseThrow(() -> new SyntaxeException(ctx, "/valo rank <pseudo> <tag>"))
+                    : (args.length >= 2 ? args[1] : null);
 
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(10))
-                    .build();
+            if (pseudoRaw == null) throw new SyntaxeException(ctx, "/valo stats <pseudo> <tag>");
 
-            String apiKey = Main.getConfigManager().getToml().getString("api.valorant_key");
+            String[] tmp= pseudoRaw.split("#");
+            String pseudo=tmp[0];
+            String tag = tmp[1];
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Authorization", apiKey)
-                    .header("Accept", "application/json")
-                    .timeout(Duration.ofSeconds(10))
-                    .build();
+            String url = "https://api.henrikdev.xyz/valorant/v1/stored-matches/eu/" + pseudo + "/" + tag + "?mode=competitive";
+            HttpResponse<String> response = ApiRiotRequete(ctx, url);
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response == null) throw new ApiException(ctx,"L'appel à l'API Riot a échoué");
+            if (response.statusCode() != 200) throw new ApiException(ctx,"Joueur introuvable : "+response.statusCode());
 
-            if (response.statusCode() != 200) {
-                writeLogFile("logs.txt",name+" | Code : "+ Code.ERREUR_API+" : "+response.statusCode());
-                EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("❌   Erreur :")
-                        .addField("Joueur introuvable ou API indisponible.","```Code: " + response.statusCode()+"```" )
-                        .setColor(Color.red);
-                event.getChannel().sendMessage(embed);
-                return;
-            }
             JSONObject json = new JSONObject(response.body());
 
-            if (!json.has("data") || json.isNull("data")) {
-                writeLogFile("logs.txt",name+" | Code : "+ Code.AUCUNE_DONNEE_TROUVER);
-                EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("❌   Erreur :")
-                        .addField("Impossible de lire les données du joueur.","" )
-                        .setColor(Color.red);
-                event.getChannel().sendMessage(embed);
-                return;
-            }
+            if (!json.has("data") || json.isNull("data")) throw new JoueurException(ctx,"Impossible de lire les données du joueur");
 
             JSONArray matchesList = json.getJSONArray("data");
 
@@ -127,7 +100,7 @@ public class CommandValoStats extends CommandValo {
             double winRate = (totalMatches > 0) ? ((double) totalWins / totalMatches) * 100 : 0;
 
             EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("📈   Stats de : "+name + "#" + tag)
+                    .setTitle("📈   Stats de : " + pseudo + "#" + tag)
                     .addField("", "")
                     .addField("⚔️   KDA Moyen", String.format("%.2f", kda))
                     .addField("", "")
@@ -139,17 +112,24 @@ public class CommandValoStats extends CommandValo {
                     .setFooter("Basé sur les " + totalMatches + " derniers matchs")
                     .setColor(Color.GREEN);
 
-            event.getChannel().sendMessage(embed);
+            ctx.replyDeferred(embed);
 
+            if(!(pseudoValoExist(pseudoRaw))){
+                ArrayList<CompteValoDiscord> compte = DataManager.loadValoDis();
+                if(compte.isEmpty()){
+                    compte = new ArrayList<>();
+                }
+                compte.add(new CompteValoDiscord("","",pseudoRaw));
+                DataManager.saveValoDis(compte);
+            }
 
+        }catch (ApiException | JoueurException e){
+                writeLogFile("logs.txt", ctx.getAuthorName() + " | Code : " + Code.AUCUNE_DONNEE_TROUVER);
+        }catch (SyntaxeException e){
+            writeLogFile("logs.txt",ctx.getAuthorName()+" | Code : "+ Code.SYNTAXE_INCORRECTE);
         } catch (Exception e) {
-            writeLogFile("logs.txt",name+" | Code : "+ Code.ERREUR_API);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("❌   Erreur :")
-                    .addField("Impossible de joindre le serveur de Riot.","")
-                    .setColor(Color.red);
-            event.getChannel().sendMessage(embed);
-            e.printStackTrace();
+            writeLogFile("logs.txt", ctx.getAuthorName()+" | Code : "+ Code.ERREUR_API);
+            ExceptionDefault(ctx,"Impossible de joindre le serveur de Riot");
         }
     }
 }

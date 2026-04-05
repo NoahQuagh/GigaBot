@@ -1,6 +1,5 @@
 package bot.discordBot;
 
-import bot.discordBot.commands.Premier.CommandPremierEvent;
 import bot.discordBot.utils.ConfigManager;
 import bot.discordBot.utils.commands.MessageManager;
 import bot.discordBot.utils.commands.datamanager.DataManager;
@@ -12,22 +11,29 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.user.User;
+import org.javacord.api.interaction.*;
+import java.util.stream.Collectors;
+import java.util.List;
 
 import java.awt.*;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static bot.discordBot.commands.Premier.CommandPremierEvent.netoyageRappel;
 import static bot.discordBot.commands.Premier.CommandPremierEvent.scheduleReminder;
+import static bot.discordBot.utils.Procedure.ValoDisProcedure.*;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
+import static java.util.Arrays.stream;
 
 public class Main {
 
     public static DiscordApi api;
     private static ConfigManager configManager;
-    public static String version ="1.0.2";
+    public static String version ="1.0.3";
 
     public static void main(String[] args) {
         entrerNew();
@@ -40,9 +46,142 @@ public class Main {
                 .login().join();
 
         api.addMessageCreateListener(MessageManager::create);
+        api.addSlashCommandCreateListener(MessageManager::handleSlash);
+        api.addAutocompleteCreateListener(event -> {
+            String focused = event.getAutocompleteInteraction()
+                    .getFocusedOption()
+                    .getStringValue()
+                    .orElse("");
+
+            List<SlashCommandOptionChoice> toutes = new ArrayList<>();
+            for (int i = 0; i < nombreCompteEnregistrer(); i++) {
+                toutes.add(SlashCommandOptionChoice.create(
+                        proposerAutoCompleteValue(i),
+                        proposerAutoCompleteValue(i)
+                ));
+            }
+
+            List<SlashCommandOptionChoice> choices = toutes.stream()
+                    .filter(c -> c.getName().toLowerCase().startsWith(focused.toLowerCase()))
+                    .limit(25)
+                    .collect(Collectors.toList());
+
+            event.getAutocompleteInteraction().respondWithChoices(choices);
+        });
+
+        //long serverId = Long.parseLong(configManager.getToml().getString("bot.test_server"));
+        new SlashCommandBuilder()
+                .setName("premier")
+                .setDescription("Commandes relatives au mode Premier de Valorant")
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "event", "Créer un événement de game Premier",
+                        Arrays.asList(
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "jour", "Format jj", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "mois", "Format mm", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "année", "Format aaaa", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "heure", "Format hh", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "minute", "Format mm", true)
+                        )
+                ))
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "createteam", "Créer sa team Premier",
+                        Arrays.asList(
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "nom", "Nom de la team Premier", true)
+                        )
+                ))
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "supteam", "Supprimer sa team Premier",
+                        Arrays.asList()
+                ))
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "teamInvite", "Inviter des joueurs dans sa team Premier",
+                        Arrays.asList(
+                                SlashCommandOption.create(SlashCommandOptionType.USER, "joueur1", "joueur à inviter", true),
+                                SlashCommandOption.create(SlashCommandOptionType.USER, "joueur2", "Joueur à inviter", false),
+                                SlashCommandOption.create(SlashCommandOptionType.USER, "joueur3", "Joueur à inviter", false),
+                                SlashCommandOption.create(SlashCommandOptionType.USER, "joueur4", "Joueur à inviter", false),
+                                SlashCommandOption.create(SlashCommandOptionType.USER, "joueur5", "Joueur à inviter", false),
+                                SlashCommandOption.create(SlashCommandOptionType.USER, "joueur6", "Joueur à inviter", false)
+                        )
+                ))
+                //.createForServer(api.getServerById(serverId).get())
+                .createGlobal(api)
+                .join();
+        new SlashCommandBuilder()
+                .setName("valorant")
+                .setDescription("Commandes relatives au jeu Valorant")
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "rank", "Obtenir le rang d'un(e) joueur/joueuse",
+                        Arrays.asList(
+                                new SlashCommandOptionBuilder()
+                                        .setType(SlashCommandOptionType.STRING)
+                                        .setName("pseudotag")
+                                        .setDescription("Pseudo#tag du joueur Valorant")
+                                        .setRequired(true)
+                                        .setAutocompletable(true)
+                                        .build()
+                        )
+                ))
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "stats", "Obtenir les stats d'un(e) joueur/joueuse",
+                        Arrays.asList(
+                                new SlashCommandOptionBuilder()
+                                        .setType(SlashCommandOptionType.STRING)
+                                        .setName("pseudotag")
+                                        .setDescription("Pseudo#tag du joueur Valorant")
+                                        .setRequired(true)
+                                        .setAutocompletable(true)
+                                        .build()
+                        )
+                ))
+                .createGlobal(api)
+                .join();
+        new SlashCommandBuilder()
+                .setName("bot")
+                .setDescription("Info sur le au bot")
+                .createGlobal(api)
+                .join();
+        new SlashCommandBuilder()
+                .setName("log")
+                .setDescription("Obtenir les logs du bot")
+                .createGlobal(api)
+                .join();
+        new SlashCommandBuilder()
+                .setName("help")
+                .setDescription("Obtenir une aide sur le bot")
+                .addOption(SlashCommandOption.create(
+                        SlashCommandOptionType.STRING,
+                        "option",
+                        "all = liste toutes les commandes",
+                        false
+                ))
+                .createGlobal(api)
+                .join();
+        new SlashCommandBuilder()
+                .setName("man")
+                .setDescription("Obtenir le manuel d'utilisation des commandes du bot")
+                .addOption(SlashCommandOption.create(
+                        SlashCommandOptionType.STRING,
+                        "commande",
+                        "Nom de la commande",
+                        true
+                ))
+                .createGlobal(api)
+                .join();
+        new SlashCommandBuilder()
+                .setName("nouveauté")
+                .setDescription("Obtenir les nouveautés du bot")
+                .addOption(SlashCommandOption.create(
+                        SlashCommandOptionType.STRING,
+                        "version",
+                        "version souhaité du bot",
+                        false
+                ))
+                .createGlobal(api)
+                .join();
+
         writeLogFile("logs.txt","bot start");
         restoreReminders(api);
-
     }
 
     public static ConfigManager getConfigManager() {
@@ -84,22 +223,26 @@ public class Main {
     private static void entrerNew(){
         /*
         ArrayList<Nouveaute> n1 = new ArrayList<>();
-        n1.add(new Nouveaute("Nouvelle commande !new :","Cette commande permet de découvrir les dernières nouveautés du GigaBot."));
-        n1.add(new Nouveaute("Améliorations architecturales du système de sauvegarde du bot :","Le système de stockage est passé d'un format texte brut (.txt) " +
-                "à une structure JSON via la bibliothèque Google Gson. Ce changement abandonne la gestion par lignes concaténées au profit d'une sérialisation d'objets Java." +
-                "De plus cette structure assure une prévention de la corruption de donnée et une auto-réparation en cas d'erreur"));
+        n1.add(new Nouveaute("Transition vers les 'Slash Commands'","L'architecture du bot a été intégralement migrée des commandes textuelles classiques vers les Slash Commands natives de Discord. L'utilisateur bénéficie désormais d'une interface visuelle dès qu'il tape `/`. Toutes les commandes disponibles sont listées avec leur description."));
+        n1.add(new Nouveaute("Système d'Autocomplétion Dynamique","Pour optimiser l'utilisation des commandes `/valorant rank` et `/valorant stats`, un système d'autocomplétion intelligente a été mis en place. Lorsque l'utilisateur commence à taper un pseudo Valorant, le bot interroge en temps réel la base de données pour lui suggérer les comptes correspondants.De plus Le bot 'apprend' les nouveaux pseudos rentrés par l'utilisateur pour les reproposés plus tard."));
+        n1.add(new Nouveaute("Nouvelle commande : !premier -createteam","Via une commande dédiée, l'utilisateur définit le nom de son équipe dont il est automatiquement le capitaine. Par la suite, il pourra inviter des membres dans son équipe."));
+        n1.add(new Nouveaute("Nouvelle command : !premier -teaminvite","Permet a un capitaine d'équipe d'envoyer des invitations par messagerie privée (DM) au joueur souhaité, ce dernier pouvant accepter ou refuser."));
+        n1.add(new Nouveaute("Nouvelle command : !premier -supteam","Permet la gestion du cycle de vie des équipes. Elle offre aux capitaines la possibilité de dissoudre leur équipe, libérant ainsi le nom de l'équipe et ses joueurs."));
+
 
         ArrayList<Bug> b1 = new ArrayList<>();
-        b1.add(new Bug("Conflit de Fuseau Horaire","Décalage de 2 heures entre l'heure de programmation du rappel d'une game premier et l'exécution réelle du rappel." +
-                "La cause est que le serveur Oracle Cloud est configuré par défaut sur le fuseau UTC (Londres), tandis que l'utilisateur est en UTC+2 (Paris/Heure d'été).","Synchronisation du serveur en UTC+2 (Paris/Heure d'été)"));
-        b1.add(new Bug("Corruption et Explosion des fichiers de sauvegarde","Apparition de milliers de lignes identiques ou de caractères de contrôle parasites (type ^M) dans le fichier de rappel, entraînant un ralentissement critique du bot."+
-                "Les causes viennent d'abord d'une boucle d'écriture infinie : Présence de processus fantômes écrivant simultanément dans le même fichier." +
-                "La seconde Cause viens d'un I/O Inefficient : Appel de la méthode de sauvegarde à l'intérieur d'une boucle, provoquant des accès disque trop fréquents et des corruptions de flux.","La sauvegarde est désormais effectuée une seule fois après la complétion de la boucle de traitement en mémoire."));
 
-        ArrayList<StrucNew> paquet = new ArrayList<>();
+
+        b1.add(new Bug("titre","probleme","solution"));
+
+
+
+
+        ArrayList<StrucNew> paquet = DataManager.loadNew();
         paquet.add(new StrucNew(version,n1,b1));
 
         DataManager.saveNew(paquet);
         */
+
     }
 }

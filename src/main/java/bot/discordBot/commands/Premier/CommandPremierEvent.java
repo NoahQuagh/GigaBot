@@ -1,8 +1,12 @@
 package bot.discordBot.commands.Premier;
 
 import bot.discordBot.commands.CommandPremier;
+import bot.discordBot.utils.Exception.DateException;
+import bot.discordBot.utils.Exception.EquipeException;
+import bot.discordBot.utils.Exception.SyntaxeException;
 import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.Command;
+import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.datamanager.DataManager;
 import bot.discordBot.utils.commands.datamanager.DataStructure.Equipe;
 import bot.discordBot.utils.commands.datamanager.DataStructure.Rappel;
@@ -10,7 +14,6 @@ import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.entity.message.component.ButtonStyle;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
-import org.javacord.api.event.message.MessageCreateEvent;
 
 import java.awt.*;
 import java.time.Duration;
@@ -23,6 +26,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
+import static bot.discordBot.utils.Procedure.EquipeProcedure.CapitaineNaPasDEquipe;
+import static bot.discordBot.utils.Procedure.EquipeProcedure.getTeamNameByIdCapitaine;
 import static bot.discordBot.utils.commands.Code.AUCUNE_DONNEE_TROUVER;
 import static bot.discordBot.utils.commands.Code.SYNTAXE_INCORRECTE;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
@@ -33,82 +39,23 @@ public class CommandPremierEvent extends CommandPremier {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void run(MessageCreateEvent event, Command command, String[] args) {
+    public void run(CommandContext ctx, Command command, String[] args) {
         netoyageRappel();
-        if (args.length != 4) {
-            String name=event.getMessageAuthor().getDisplayName();
-            writeLogFile("logs.txt",name+" | Code : "+ SYNTAXE_INCORRECTE);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("⚠️   Attention :")
-                    .setDescription("Syntaxe incorrecte !")
-                    .addField("Exemple syntaxe:","```!premier -event dd/mm/yyyy hh:mm ningen```")
-                    .setColor(Color.orange);
-            event.getChannel().sendMessage(embed);
-            return;
-        }
+        if (ctx.isSlash()) ctx.defer();
         try {
+            if(CapitaineNaPasDEquipe(ctx.getAuthorId())) throw new EquipeException(ctx, "Vous ne possédez pas de team Premier");
 
-            if (DataManager.loadEquipes().isEmpty()) {
-                String name=event.getMessageAuthor().getDisplayName();
-                writeLogFile("logs.txt",name+" | Code : "+ AUCUNE_DONNEE_TROUVER);
-                return;
-            }
+            execute(ctx,args[1]+":"+args[2]+":"+args[3],args[4]+":"+args[5],getTeamNameByIdCapitaine(ctx.getAuthorId()));
 
-            String date = args[1].replace("/", ":");
-            String heure = args[2];
-            String team = args[3].toLowerCase();
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd:MM:yyyy HH:mm");
-            LocalDateTime dateTimeEvent = LocalDateTime.parse(date + " " + heure, formatter);
-
-            ZoneId parisZone = ZoneId.of("Europe/Paris");
-            ZonedDateTime nowParis = ZonedDateTime.now(parisZone);
-
-            ZonedDateTime matchTimeParis = dateTimeEvent.atZone(parisZone);
-
-            if (matchTimeParis.isBefore(nowParis)) {
-                EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("❌ Erreur de date")
-                        .setDescription("Impossible de créer un événement dans le passé !")
-                        .addField("Heure actuelle (Paris)", nowParis.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
-                        .setColor(Color.RED);
-                event.getChannel().sendMessage(embed);
-                writeLogFile("logs.txt", event.getMessageAuthor().getName()+SYNTAXE_INCORRECTE);
-                return;
-            }
-
-            ArrayList<Equipe> equipes = DataManager.loadEquipes();
-
-
-            for (Equipe equipe : equipes) {
-                if (equipe.getEquipeId().equalsIgnoreCase(team)) {
-                    for (String currentId : equipe.getJoueurIds()) {
-                        event.getApi().getUserById(currentId).thenAccept(user -> {
-                            sendInvitationAndListen(user, date, heure, dateTimeEvent, team);
-
-                            event.getChannel().sendMessage("✅ Invitation envoyé à **" + user.getName() +
-                                    "** pour la game du **" + dateTimeEvent.toString().replace("T", " à ").replace("-", "/") +
-                                    "** dans la team **" + team+"**");
-
-                        }).exceptionally(e -> {
-                            writeLogFile("logs.txt", currentId + " | " + AUCUNE_DONNEE_TROUVER + " >> " + e);
-                            return null;
-                        });
-                    }
-                    return;
-                }
-            }
-            event.getChannel().sendMessage("❌ L'équipe **" + team + "** n'existe pas dans la base de données.");
-
-
+        }catch (SyntaxeException e){
+            writeLogFile("logs.txt",ctx.getAuthorName()+" | Code : "+ SYNTAXE_INCORRECTE);
+        }catch (DateException e){
+            writeLogFile("logs.txt", ctx.getAuthorName() + SYNTAXE_INCORRECTE);
+        }catch (EquipeException e){
+            writeLogFile("logs.txt",args[3].toLowerCase()+" | Code : "+ AUCUNE_DONNEE_TROUVER);
         } catch (Exception e) {
-            String name=event.getMessageAuthor().getDisplayName();
-            writeLogFile("logs.txt",name+" | Problem occurred during the creation of a game Premier");
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("❌   Erreur :")
-                    .addField("Probleme survenu sur la creation d'une game premier.","```code : "+e+"```")
-                    .setColor(Color.red);
-            event.getChannel().sendMessage(embed);
+            writeLogFile("logs.txt","Code : "+ Code.ECHEC+" : "+e);
+            ExceptionDefault(ctx,"Impossible de crée un évènement pour la team Premier "+getTeamNameByIdCapitaine(ctx.getAuthorId()));
         }
 
     }
@@ -210,4 +157,42 @@ public class CommandPremierEvent extends CommandPremier {
             writeLogFile("logs.txt", "Nettoyage automatique : Rappels expirés supprimés.");
         }
     }
+
+    public void execute(CommandContext ctx,String date,String heure,String team) throws DateException,EquipeException{
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd:MM:yyyy HH:mm");
+        LocalDateTime dateTimeEvent = LocalDateTime.parse(date + " " + heure, formatter);
+
+        ZoneId parisZone = ZoneId.of("Europe/Paris");
+        ZonedDateTime nowParis = ZonedDateTime.now(parisZone);
+
+        ZonedDateTime matchTimeParis = dateTimeEvent.atZone(parisZone);
+
+        if (matchTimeParis.isBefore(nowParis))
+            throw new DateException(ctx, "Erreur de date", "Impossible de créer un événement dans le passé", "Heure actuelle (Paris)", nowParis.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+
+        ArrayList<Equipe> equipes = DataManager.loadEquipes();
+
+        for (Equipe equipe : equipes) {
+            if (equipe.getEquipeId().equalsIgnoreCase(team)) {
+                for (String currentId : equipe.getJoueurIds()) {
+                    ctx.getApi().getUserById(currentId).thenAccept(user -> {
+                        sendInvitationAndListen(user, date, heure, dateTimeEvent, team);
+
+                        ctx.replyDeferred("✅ Invitation envoyé à **" + user.getName() +
+                                "** pour la game du **" + dateTimeEvent.toString().replace("T", " à ").replace("-", "/") +
+                                "** dans la team **" + team + "**");
+
+                    }).exceptionally(e -> {
+                        writeLogFile("logs.txt", currentId + " | " + AUCUNE_DONNEE_TROUVER + " >> " + e);
+                        ExceptionDefault(ctx, "Impossible de crée un évènement pour la team Premier " + team);
+                        return null;
+                    });
+                }
+                return;
+            }
+        }
+        throw new EquipeException(ctx, "Ce nom de team n'existe pas");
+    }
+
+
 }

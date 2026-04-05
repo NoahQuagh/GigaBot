@@ -2,10 +2,15 @@ package bot.discordBot.commands.Valo;
 
 import bot.discordBot.Main;
 import bot.discordBot.commands.CommandValo;
+import bot.discordBot.utils.Exception.ApiException;
+import bot.discordBot.utils.Exception.JoueurException;
+import bot.discordBot.utils.Exception.SyntaxeException;
 import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.Command;
+import bot.discordBot.utils.commands.CommandContext;
+import bot.discordBot.utils.commands.datamanager.DataManager;
+import bot.discordBot.utils.commands.datamanager.DataStructure.CompteValoDiscord;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.event.message.MessageCreateEvent;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -14,70 +19,42 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
 
+import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
+import static bot.discordBot.utils.Procedure.ApiProcedure.ApiRiotRequete;
+import static bot.discordBot.utils.Procedure.ValoDisProcedure.pseudoValoExist;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandValoRank extends CommandValo {
     @Override
-    public void run(MessageCreateEvent event, Command command, String[] args) {
-        if (args.length != 2) {
-            String name=event.getMessageAuthor().getDisplayName();
-            writeLogFile("logs.txt",name+" | Code : "+ Code.SYNTAXE_INCORRECTE);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("⚠️   Attention :")
-                    .setDescription("Syntaxe incorrecte !")
-                    .addField("Exemple syntaxe:","```!valo -rank bouffeur2pieds#6767```")
-                    .setColor(Color.orange);
-            event.getChannel().sendMessage(embed);
-            return;
-        }
-
-
-
+    public void run(CommandContext ctx, Command command, String[] args) {
+        if (ctx.isSlash()) ctx.defer();
         try {
-            String pseudo = args[1];//pseudo
-            String[] split = pseudo.split("#");
+            String pseudoRaw = ctx.isSlash()
+                    ? ctx.getOptionString("pseudotag").orElseThrow(() -> new SyntaxeException(ctx, "/valo rank <pseudo> <tag>"))
+                    : (args.length >= 2 ? args[1] : null);
 
-            String name = split[0];//nom
-            String tag = split[1];//tag
 
-            String url = "https://api.henrikdev.xyz/valorant/v1/mmr/eu/" + name + "/" + tag;
+            if (pseudoRaw == null) throw new SyntaxeException(ctx, "/valo rank <pseudo> <tag>");
 
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(10))
-                    .build();
 
-            String apiKey = Main.getConfigManager().getToml().getString("api.valorant_key");
+            String[] tmp= pseudoRaw.split("#");
+            String pseudo=tmp[0];
+            String tag = tmp[1];
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Authorization", apiKey)
-                    .header("Accept", "application/json")
-                    .timeout(Duration.ofSeconds(10))
-                    .build();
+            String url = "https://api.henrikdev.xyz/valorant/v1/mmr/eu/" + pseudo + "/" + tag;
+            HttpResponse<String> response = ApiRiotRequete(ctx, url);
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() != 200) {
-                writeLogFile("logs.txt",name+" | Code : "+ Code.ERREUR_API+" : "+response.statusCode());
-                EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("❌   Erreur :")
-                        .addField("Joueur introuvable ou API indisponible.", "```Code: " + response.statusCode() + "```")
-                        .setColor(Color.red);
-                event.getChannel().sendMessage(embed);
-                return;
-            }
+            if (response == null) throw new ApiException(ctx,"L'appel à l'API Riot a échoué");
+            if (response.statusCode() != 200) throw new ApiException(ctx,"Joueur introuvable : "+response.statusCode());
+
+
+
             JSONObject json = new JSONObject(response.body());
 
-            if (!json.has("data") || json.isNull("data")) {
-                writeLogFile("logs.txt",name+" | Code : "+ Code.AUCUNE_DONNEE_TROUVER);
-                EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("❌   Erreur :")
-                        .addField("Impossible de lire les données du joueur.", "")
-                        .setColor(Color.red);
-                event.getChannel().sendMessage(embed);
-                return;
-            }
+            if (!json.has("data") || json.isNull("data")) throw new JoueurException(ctx,"Impossible de lire les données du joueur");
 
             JSONObject data = json.getJSONObject("data");
 
@@ -90,30 +67,31 @@ public class CommandValoRank extends CommandValo {
             }
 
             EmbedBuilder embed = new EmbedBuilder()
-                    .setAuthor(name + "#" + tag)
+                    .setAuthor(pseudo + "#" + tag)
                     .setTitle("Rank :")
                     .setDescription("## " + rank + " : " + mmr + "  RR")
                     .setColor(Color.GREEN);
 
             if (!iconUrl.isEmpty()) embed.setThumbnail(iconUrl);
 
-            event.getChannel().sendMessage(embed);
-        }catch (ArrayIndexOutOfBoundsException e){
-            writeLogFile("logs.txt","Code : "+ Code.SYNTAXE_INCORRECTE);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("⚠️   Attention :")
-                    .setDescription("Syntaxe incorrecte !")
-                    .addField("Exemple syntaxe:","```!valo -rank bouffeur2pieds#6767```")
-                    .setColor(Color.orange);
-            event.getChannel().sendMessage(embed);
-            return;
+            ctx.replyDeferred(embed);
+
+            if(!(pseudoValoExist(pseudoRaw))){
+                ArrayList<CompteValoDiscord> compte = DataManager.loadValoDis();
+                if(compte.isEmpty()){
+                    compte = new ArrayList<>();
+                }
+                compte.add(new CompteValoDiscord("","",pseudoRaw));
+                DataManager.saveValoDis(compte);
+            }
+
+        }catch (SyntaxeException e) {
+            writeLogFile("logs.txt", ctx.getAuthorName() + " | Code : " + Code.ERREUR_API);
+        }catch(ApiException | JoueurException e){
+            writeLogFile("logs.txt", ctx.getAuthorName() + " | Code : " + Code.AUCUNE_DONNEE_TROUVER);
         } catch (Exception e) {
-            writeLogFile("logs.txt","Code : "+ Code.ERREUR_API);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("❌   Erreur :")
-                    .addField("Impossible de joindre le serveur de Riot.","")
-                    .setColor(Color.red);
-            event.getChannel().sendMessage(embed);
+            writeLogFile("logs.txt","Code : "+ Code.ERREUR_API+" : "+e);
+            ExceptionDefault(ctx,"Impossible de joindre le serveur de Riot");
         }
     }
 }

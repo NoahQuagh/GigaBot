@@ -90,6 +90,19 @@ public class DataManager {
         } catch (Exception e) { return new ArrayList<>(); }
     }
 
+    private static final File FILE_VALODIS = new File("src/main/data/ValoDis.json");
+    // SAUVEGARDER // SAUVEGARDER RAPPELS
+    public static void saveValoDis(ArrayList<CompteValoDiscord> list) {
+        try (Writer w = new FileWriter(FILE_VALODIS)) { gson.toJson(list, w); } catch (IOException e) {}
+    }
+    // RAPPELS // SAUVEGARDER RAPPELS
+    public static ArrayList<CompteValoDiscord> loadValoDis() {
+        if (!FILE_VALODIS.exists()) return new ArrayList<>();
+        try (Reader r = new FileReader(FILE_VALODIS)) {
+            return gson.fromJson(r, new TypeToken<ArrayList<CompteValoDiscord>>(){}.getType());
+        } catch (Exception e) { return new ArrayList<>(); }
+    }
+
 
     public static Gson getGson() {
         return gson;

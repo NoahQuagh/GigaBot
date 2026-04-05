@@ -1,8 +1,8 @@
 package bot.discordBot.commands;
 
+import bot.discordBot.utils.Exception.SyntaxeException;
 import bot.discordBot.utils.commands.*;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.event.message.MessageCreateEvent;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -22,72 +22,62 @@ public class CommandMan implements CommandExecutor {
 
     @Override
     public String getUsage() {
-        return "!man <commande>";
+        return "/man <commande>";
     }
 
     public HashMap<Integer,String> variation = new HashMap<>();
 
     @Override
     public HashMap<Integer, String> getVariation() {
-        variation.put(0,"ex: !man valo");
+        variation.put(0,"ex: /man valorant");
         return variation;
     }
 
     @Override
-    public void run(MessageCreateEvent event, Command command, String[] args) {
-        if (args.length != 1) {
-            String name=event.getMessageAuthor().getDisplayName();
-            writeLogFile("logs.txt",name+" | Code : "+ Code.SYNTAXE_INCORRECTE);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("⚠️   Attention :")
-                    .setDescription("Syntaxe incorrecte !")
-                    .addField("syntaxe correcte:","```!man <commande>```")
-                    .setColor(Color.orange);
-            event.getChannel().sendMessage(embed);
-            return;
-        }
-        String targetAlias = args[0].toLowerCase();
+    public void run(CommandContext ctx, Command command, String[] args) {
+        try{
+            if (args.length != 1) throw new SyntaxeException(ctx,"/man <commande>");
 
-        MessageManager.getRegistry().getByAlias(targetAlias).ifPresentOrElse(cmd -> {
-            CommandExecutor exec = cmd.getExecutor();
+            String targetAlias = ctx.getOptionStringDirect("commande").orElse("").toLowerCase();
 
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("Manuel :   !" + exec.getName())
-                    .setDescription("```         ,..........   ..........,\n" +
-                            "     ,..,'          '.'          ',..,\n" +
-                            "    ,' ,'            :            ', ',\n" +
-                            "   ,' ,'    M  A  N  :  U  E  L    ', ',\n" +
-                            "  ,' ,'              :              ', ',\n" +
-                            " ,' ,'............., : ,.............', ',\n" +
-                            ",'  '............   '.'   ............'  ',\n" +
-                            " '''''''''''''''''';''';''''''''''''''''''\n" +
-                            "                    '''\n```")
-                    .addField("Description",exec.getDescription())
-                    .addField("","")
-                    .addField("🛠️ Usage", "```" + exec.getUsage() + "```")
-                    .addField("", "")
-                    .setColor(Color.green);
-                    //.setFooter("Demandé par " + event.getMessageAuthor().getDisplayName());
+            MessageManager.getRegistry().getByAlias(targetAlias).ifPresentOrElse(cmd -> {
+                CommandExecutor exec = cmd.getExecutor();
+
+                EmbedBuilder embed = new EmbedBuilder()
+                        .setTitle("Manuel :   /" + exec.getName())
+                        .setDescription("```         ,..........   ..........,\n" +
+                                "     ,..,'          '.'          ',..,\n" +
+                                "    ,' ,'            :            ', ',\n" +
+                                "   ,' ,'    M  A  N  :  U  E  L    ', ',\n" +
+                                "  ,' ,'              :              ', ',\n" +
+                                " ,' ,'............., : ,.............', ',\n" +
+                                ",'  '............   '.'   ............'  ',\n" +
+                                " '''''''''''''''''';''';''''''''''''''''''\n" +
+                                "                    '''\n```")
+                        .addField("Description", exec.getDescription())
+                        .addField("", "")
+                        .addField("🛠️ Usage", "``" + exec.getUsage() + "``")
+                        .addField("", "")
+                        .setColor(Color.green);
+                //.setFooter("Demandé par " + event.getMessageAuthor().getDisplayName());
 
 
-            if(!exec.getVariation().isEmpty()){
-                embed.addField("Variation disponible :", "");
-                embed.addField("", "");
-                for(int i = 0; i<exec.getVariation().size();i++){
-                    String[] text = exec.getVariation().get(i).split("_");
-                    embed.addField(text[0],"```"+text[1]+"```");
+                if (!exec.getVariation().isEmpty()) {
+                    embed.addField("Variation disponible :", "");
+                    embed.addField("", "");
+                    for (int i = 0; i < exec.getVariation().size(); i++) {
+                        String[] text = exec.getVariation().get(i).split("_");
+                        embed.addField(text[0], "``" + text[1] + "``");
+                    }
                 }
-            }
 
-            event.getChannel().sendMessage(embed);
-        }, () -> {
-            String name=event.getMessageAuthor().getDisplayName();
-            writeLogFile("logs.txt",name+" | Code : "+ Code.SYNTAXE_INCORRECTE);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("❌   Erreur :")
-                    .addField("La commande `" + targetAlias + "` est inconnue.", "")
-                    .setColor(Color.red);
-            event.getChannel().sendMessage(embed);
-        });
+                ctx.reply(embed);
+            }, () -> {
+                throw new SyntaxeException(ctx,"La commande '" + targetAlias + "' n'est pas reconnue par le Bot");
+            });
+        }catch (SyntaxeException e){
+            writeLogFile("logs.txt", ctx.getAuthorName()+" | Code : "+ Code.SYNTAXE_INCORRECTE);
+        }
+
     }
 }

@@ -3,7 +3,9 @@ package bot.discordBot.utils.commands;
 import bot.discordBot.Main;
 import bot.discordBot.commands.*;
 import bot.discordBot.utils.commands.datamanager.CommandLog;
+import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.interaction.SlashCommandInteraction;
 
 import java.util.Arrays;
 
@@ -14,50 +16,40 @@ public class MessageManager {
     //creation de nouvelle commande ici puis cree ca class pour les actions qu'elle realisera
     static {
         registry.addCommand(new Command(
-                "ping",
-                new CommandPing(),
-                "ping"
-        ));
-        registry.addCommand(new Command(
                 "bot",
                 new CommandBot(),
                 "bot"
         ));
         registry.addCommand(new Command(
-                "paul",
-                new CommandPaul(),
-                "paul"
-        ));
-        registry.addCommand(new Command(
                 "help",
                 new CommandHelp(),
-                "help","h?"
+                "help"
 
         ));
         registry.addCommand(new Command(
-                "valo",
+                "valorant",
                 new CommandValo(),
-                "valo","v"
+                "valorant"
         ));
         registry.addCommand(new Command(
                 "man",
                 new CommandMan(),
-                "man","m"
+                "man"
         ));
         registry.addCommand(new Command(
                 "log",
                 new CommandGetLog(),
-                "log","l"
+                "log"
         ));
         registry.addCommand(new Command(
                 "premier",
                 new CommandPremier(),
-                "premier","p"
+                "premier"
         ));
         registry.addCommand(new Command(
-                "new",
+                "nouveauté",
                 new CommandNew(),
-                "new"
+                "nouveauté"
         ));
     }
 
@@ -69,23 +61,44 @@ public class MessageManager {
 
     public static void create(MessageCreateEvent event) {
         String content = event.getMessageContent();
-
         if (content.startsWith(PREFIX)) {
-
             String[] split = content.split(" ");
-
             String commandName = split[0].substring(PREFIX.length());
-
-            String[] args = (split.length > 1)
+            String[] args = split.length > 1
                     ? Arrays.copyOfRange(split, 1, split.length)
                     : new String[0];
 
-            registry.getByAlias(commandName).ifPresent((cmd) -> {
-                String name=event.getMessageAuthor().getDisplayName();
-                CommandLog log = new CommandLog(content,name);
-                //les arguments propres à l'exécuteur
-                cmd.getExecutor().run(event, cmd, args);
+            registry.getByAlias(commandName).ifPresent(cmd -> {
+                // Seul changement : on wrappe dans CommandContext
+                CommandContext ctx = new CommandContext(event);
+                cmd.getExecutor().run(ctx, cmd, args);
             });
         }
+    }
+    public static void handleSlash(SlashCommandCreateEvent event) {
+        SlashCommandInteraction interaction = event.getSlashCommandInteraction();
+        String commandName = interaction.getCommandName();
+
+        // Récupère le sous-argument (subcommand) s'il existe
+        String[] args = interaction.getOptions().stream()
+                .findFirst() // le subcommand
+                .map(sub -> {
+                    // Reconstruit args[] : ["-event", "date", "heure", "team"]
+                    String subName = "-" + sub.getName();
+                    String[] subArgs = sub.getOptions().stream()
+                            .map(o -> o.getStringRepresentationValue().orElse(""))
+                            .toArray(String[]::new);
+                    // Merge : ["-event", ...subArgs]
+                    String[] result = new String[subArgs.length + 1];
+                    result[0] = subName;
+                    System.arraycopy(subArgs, 0, result, 1, subArgs.length);
+                    return result;
+                })
+                .orElse(new String[0]);
+
+        registry.getByAlias(commandName).ifPresent(cmd -> {
+            CommandContext ctx = new CommandContext(event);
+            cmd.getExecutor().run(ctx, cmd, args);
+        });
     }
 }

@@ -1,8 +1,13 @@
 package bot.discordBot.commands.Premier;
 
 import bot.discordBot.commands.CommandPremier;
+import bot.discordBot.utils.Exception.CapitaineException;
+import bot.discordBot.utils.Exception.EquipeException;
+import bot.discordBot.utils.Exception.JoueurException;
+import bot.discordBot.utils.Exception.SyntaxeException;
 import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.Command;
+import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.datamanager.DataManager;
 import bot.discordBot.utils.commands.datamanager.DataStructure.Equipe;
 import org.javacord.api.entity.message.component.Button;
@@ -13,85 +18,47 @@ import org.javacord.api.event.message.MessageCreateEvent;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static bot.discordBot.Main.api;
+import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
+import static bot.discordBot.utils.Procedure.EquipeProcedure.*;
 import static bot.discordBot.utils.commands.Code.*;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
-public class CommandPremierAddPlayerTeam extends CommandPremier {
+public class CommandPremierTeamInvite extends CommandPremier {
     @Override
-    public void run(MessageCreateEvent event, Command command, String[] args){
-        if (args.length != 2) {
-            String name=event.getMessageAuthor().getDisplayName();
-            writeLogFile("logs.txt",name+" | Code : "+ SYNTAXE_INCORRECTE);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("⚠️   Attention :")
-                    .setDescription("Syntaxe incorrecte !")
-                    .addField("Exemple syntaxe:","```!premier -addplayerteam @nomJoueur```")
-                    .setColor(Color.orange);
-            event.getChannel().sendMessage(embed);
-            return;
-        }
-        try{
-            String idJoueur = event.getMessage().getMentionedUsers().getFirst().getIdAsString();
+    public void run(CommandContext ctx, Command command, String[] args) {
+        if (ctx.isSlash()) ctx.defer();
+        try {
+            List<User> joueurs = ctx.getMentionedUsers();
+            String team = getTeamNameByIdCapitaine(ctx.getAuthorId());
+            if (team==null) throw new EquipeException(ctx,"Il existe aucune team Premier dont vous êtes le capitaine");
+            if(NbJoueurMaxAtteint(ctx.getAuthorId())) throw new JoueurException(ctx, "Nombre de joueurs dans une team atteint");
 
+            execute(ctx,joueurs,team);
 
-            ArrayList<Equipe> equipes = DataManager.loadEquipes();
-
-            for(Equipe equipe : equipes){
-                if(equipe.getChefId().equals(event.getMessageAuthor().getIdAsString())){
-                    api.getUserById(idJoueur).thenAccept(user -> {
-
-                        String team = equipe.getEquipeId();
-                        String pseudo = user.getName();
-
-                        event.getChannel().sendMessage("✅ Invitation envoyé à **"+pseudo+"**");
-                        writeLogFile("logs.txt",pseudo+" | Invitation sent to join a team Premier");
-                        sendDemande(user,pseudo,team,idJoueur,event);
-
-                    }).exceptionally(e ->{
-
-                        writeLogFile("logs.txt","Code : "+ Code.AUCUNE_DONNEE_TROUVER+" : "+e);
-
-                        EmbedBuilder embed = new EmbedBuilder()
-                                .setTitle("❌   Erreur :")
-                                .addField("Impossible d'ajouter le joueur'.","```Code : "+AUCUNE_DONNEE_TROUVER+"```")
-                                .setColor(Color.red);
-                        event.getChannel().sendMessage(embed);
-
-                        return null;
-                    });
-                }else{
-                    writeLogFile("logs.txt","Code : "+ ACCEE_REFUSE);
-
-                    EmbedBuilder embed = new EmbedBuilder()
-                            .setTitle("❌   Erreur :")
-                            .addField("Impossible d'ajouter le joueur car vous n'êtes pas le capitaine de cette team.","```Code : "+ACCEE_REFUSE+"```")
-                            .setColor(Color.red);
-                    event.getChannel().sendMessage(embed);
-                    return;
-                }
-            }
-
+        }catch (CapitaineException e){
+            writeLogFile("logs.txt", "Code : " + ACCEE_REFUSE);
+        }catch (SyntaxeException e){
+            writeLogFile("logs.txt", ctx.getAuthorName()+" | Code : "+ SYNTAXE_INCORRECTE);
+        }catch (JoueurException e){
+            writeLogFile("logs.txt","Code : "+ Code.SYNTAXE_INCORRECTE+" : "+e);
         }catch (IndexOutOfBoundsException e){
             writeLogFile("logs.txt","Code : "+ Code.SYNTAXE_INCORRECTE+" : "+e);
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle("❌   Erreur :")
                     .addField("Impossible d'ajouter le joueur'.","@nomJoueur doit être une mention du joueur souhaité")
                     .setColor(Color.red);
-            event.getChannel().sendMessage(embed);
+            ctx.replyDeferred(embed);
         }catch (Exception e){
             writeLogFile("logs.txt","Code : "+ Code.ECHEC+" : "+e);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("❌   Erreur :")
-                    .addField("Impossible de crée la team premier.","```Code : "+ECHEC+"```")
-                    .setColor(Color.red);
-            event.getChannel().sendMessage(embed);
+            ExceptionDefault(ctx, "Impossible d'ajouter le(s) joueur(s)");
         }
     }
 
-    private void sendDemande(User user, String pseudo, String team,String idJoueur,MessageCreateEvent event){
+    private void sendDemande(User user, String pseudo, String team,String idJoueur,CommandContext ctx){
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("Invitation dans la team Premier")
                 .setDescription("Vous avez été invité dans une team de Premier **"+team.toUpperCase()+"**")
@@ -119,7 +86,7 @@ public class CommandPremierAddPlayerTeam extends CommandPremier {
                                     .applyChanges();
 
 
-                            validerInvitation(team,idJoueur,pseudo,event);
+                            validerInvitation(team,idJoueur,pseudo,ctx);
                         } else {
                             writeLogFile("logs.txt",pseudo+" | refused the invitation to join the team Premier");
                             updater.setContent("❌ Invitation refusé dans la team Premier **"+team.toUpperCase()+"**")
@@ -127,42 +94,31 @@ public class CommandPremierAddPlayerTeam extends CommandPremier {
                                     .removeAllComponents()
                                     .applyChanges();
 
-                            api.getUserById(event.getMessageAuthor().getIdAsString()).thenAccept(chef -> {
+                            api.getUserById(ctx.getAuthorId()).thenAccept(chef -> {
                                 chef.sendMessage("❌ **"+pseudo+"** à refusé l'invitation dans votre team **"+team.toUpperCase()+"**");
                             }).exceptionally(e -> {
 
                                 writeLogFile("logs.txt","Code : "+ Code.AUCUNE_DONNEE_TROUVER+" : "+e);
-
-                                EmbedBuilder embed2 = new EmbedBuilder()
-                                        .setTitle("❌   Erreur :")
-                                        .addField("Impossible d'envoyé une reponse au chef de la team'.","```Code : "+AUCUNE_DONNEE_TROUVER+"```")
-                                        .setColor(Color.red);
-                                event.getChannel().sendMessage(embed2);
-
+                                ExceptionDefault(ctx,"Impossible d'envoyé une réponse au chef de la team");
                                 return null;
                             });
                         }
                     }).removeAfter(1, TimeUnit.DAYS);
                 }).exceptionally(e -> {
                     writeLogFile("logs.txt","Code : "+ ECHEC+" : "+e);
+                    ExceptionDefault(ctx, "Impossible d'ajouter le(s) joueur(s)");
                     return null;
                 });
     }
 
-    private void validerInvitation(String team,String idJoueur,String pseudo,MessageCreateEvent event){
+    private void validerInvitation(String team,String idJoueur,String pseudo,CommandContext ctx){
 
-        api.getUserById(event.getMessageAuthor().getIdAsString()).thenAccept(chef -> {
+        api.getUserById(ctx.getAuthorId()).thenAccept(chef -> {
             chef.sendMessage("✅ **"+pseudo+"** à accepté l'invitation dans votre team **"+team.toUpperCase()+"**");
         }).exceptionally(e -> {
 
             writeLogFile("logs.txt","Code : "+ Code.AUCUNE_DONNEE_TROUVER+" : "+e);
-
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("❌   Erreur :")
-                    .addField("Impossible d'envoyé une reponse au chef de la team'.","```Code : "+AUCUNE_DONNEE_TROUVER+"```")
-                    .setColor(Color.red);
-            event.getChannel().sendMessage(embed);
-
+            ExceptionDefault(ctx,"Impossible d'envoyé une réponse au chef de la team");
             return null;
         });
         try{
@@ -179,11 +135,29 @@ public class CommandPremierAddPlayerTeam extends CommandPremier {
 
         }catch (Exception e){
             writeLogFile("logs.txt","Code : "+ Code.ECHEC+" : "+e);
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("❌   Erreur :")
-                    .addField("Impossible d'ajouter le joueur.","```Code : "+ECHEC+"```")
-                    .setColor(Color.red);
-            event.getChannel().sendMessage(embed);
+            ExceptionDefault(ctx, "Impossible d'ajouter le(s) joueur(s)");
         }
     }
+
+    public void execute(CommandContext ctx,List<User> joueurs,String team){
+        StringBuilder confirmation = new StringBuilder();
+
+        for (User user : joueurs) {
+            String idJoueur = user.getIdAsString();
+
+            if (joueurDejaDansUneEquipe(idJoueur)) {
+                confirmation.append("⚠️ **").append(user.getName()).append("** fait déjà partie d'une team.\n");
+                continue;
+            }
+
+            String pseudo = user.getName();
+
+            confirmation.append("✅ Invitation envoyée à **").append(pseudo).append("**\n");
+            writeLogFile("logs.txt", pseudo + " | Invitation sent to join team " + team);
+            sendDemande(user, pseudo, team, idJoueur, ctx);
+        }
+
+        ctx.replyDeferred(confirmation.toString());
+    }
+
 }

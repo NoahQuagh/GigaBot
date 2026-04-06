@@ -13,10 +13,9 @@ import bot.discordBot.utils.commands.datamanager.DataStructure.Equipe;
 import java.util.ArrayList;
 
 import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
-import static bot.discordBot.utils.Procedure.EquipeProcedure.estDejaCapitaineDuneEquipe;
-import static bot.discordBot.utils.Procedure.EquipeProcedure.nomEquipteUtiliser;
 import static bot.discordBot.utils.Success.success.EventSuccess;
 import static bot.discordBot.utils.commands.Code.SYNTAXE_INCORRECTE;
+import static bot.discordBot.utils.commands.datamanager.DataStructure.Equipe.*;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandPremierAddTeam extends CommandPremier {
@@ -33,7 +32,7 @@ public class CommandPremierAddTeam extends CommandPremier {
             String idCapitaine = ctx.getAuthorId();
 
             if (estDejaCapitaineDuneEquipe(idCapitaine))throw new CapitaineException(ctx, "Vous possédez déjà une team Premier");
-
+            if (joueurDejaDansUneEquipe(idCapitaine)) throw new CapitaineException(ctx,"Vous faite déjà partie d'une team Premier");
 
             execute(ctx,idCapitaine,nomTeam);
 
@@ -42,18 +41,18 @@ public class CommandPremierAddTeam extends CommandPremier {
         }catch (EquipeException | CapitaineException e){
             writeLogFile("logs.txt","Code : "+ Code.SYNTAXE_INCORRECTE+" : "+e);
         } catch (Exception e){
-            ExceptionDefault(ctx,"Impossible de crée une Team Premier");
-            writeLogFile("logs.txt","Code : "+ Code.ECHEC+" : "+e);
+            ExceptionDefault(ctx, "Impossible de créer une Team Premier");
+            writeLogFile("logs.txt", "Code : " + Code.ECHEC + " : " + e);
         }
     }
     public void execute(CommandContext ctx,String idCapitaine,String nomTeam) throws EquipeException{
         if (nomEquipteUtiliser(nomTeam)) throw new EquipeException(ctx, "Ce nom de team existe déja");
 
-        ArrayList<Equipe> equipe = new ArrayList<>();
+        ArrayList<Equipe> equipe = DataManager.loadEquipes();
         ArrayList<String> joueur = new ArrayList<>();
 
         joueur.add(idCapitaine);
-        equipe.add(new Equipe(nomTeam, idCapitaine, joueur));
+        equipe.add(new Equipe(nomTeam, idCapitaine,joueur));
 
         DataManager.saveEquipes(equipe);
 

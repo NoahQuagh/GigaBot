@@ -14,7 +14,6 @@ import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.entity.message.component.ButtonStyle;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
-import org.javacord.api.event.message.MessageCreateEvent;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -23,8 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 import static bot.discordBot.Main.api;
 import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
-import static bot.discordBot.utils.Procedure.EquipeProcedure.*;
 import static bot.discordBot.utils.commands.Code.*;
+import static bot.discordBot.utils.commands.datamanager.DataStructure.Equipe.*;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandPremierTeamInvite extends CommandPremier {
@@ -32,9 +31,13 @@ public class CommandPremierTeamInvite extends CommandPremier {
     public void run(CommandContext ctx, Command command, String[] args) {
         if (ctx.isSlash()) ctx.defer();
         try {
+
             List<User> joueurs = ctx.getMentionedUsers();
+
             String team = getTeamNameByIdCapitaine(ctx.getAuthorId());
-            if (team==null) throw new EquipeException(ctx,"Il existe aucune team Premier dont vous êtes le capitaine");
+
+            if(team==null) throw new EquipeException(ctx,"Il existe aucune team Premier dont vous êtes le capitaine");
+
             if(NbJoueurMaxAtteint(ctx.getAuthorId())) throw new JoueurException(ctx, "Nombre de joueurs dans une team atteint");
 
             execute(ctx,joueurs,team);
@@ -43,7 +46,7 @@ public class CommandPremierTeamInvite extends CommandPremier {
             writeLogFile("logs.txt", "Code : " + ACCEE_REFUSE);
         }catch (SyntaxeException e){
             writeLogFile("logs.txt", ctx.getAuthorName()+" | Code : "+ SYNTAXE_INCORRECTE);
-        }catch (JoueurException e){
+        }catch (EquipeException | JoueurException e){
             writeLogFile("logs.txt","Code : "+ Code.SYNTAXE_INCORRECTE+" : "+e);
         }catch (IndexOutOfBoundsException e){
             writeLogFile("logs.txt","Code : "+ Code.SYNTAXE_INCORRECTE+" : "+e);
@@ -59,6 +62,7 @@ public class CommandPremierTeamInvite extends CommandPremier {
     }
 
     private void sendDemande(User user, String pseudo, String team,String idJoueur,CommandContext ctx){
+        System.out.println("deamnde");
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("Invitation dans la team Premier")
                 .setDescription("Vous avez été invité dans une team de Premier **"+team.toUpperCase()+"**")
@@ -112,7 +116,7 @@ public class CommandPremierTeamInvite extends CommandPremier {
     }
 
     private void validerInvitation(String team,String idJoueur,String pseudo,CommandContext ctx){
-
+        System.out.println("invite");
         api.getUserById(ctx.getAuthorId()).thenAccept(chef -> {
             chef.sendMessage("✅ **"+pseudo+"** à accepté l'invitation dans votre team **"+team.toUpperCase()+"**");
         }).exceptionally(e -> {
@@ -141,7 +145,6 @@ public class CommandPremierTeamInvite extends CommandPremier {
 
     public void execute(CommandContext ctx,List<User> joueurs,String team){
         StringBuilder confirmation = new StringBuilder();
-
         for (User user : joueurs) {
             String idJoueur = user.getIdAsString();
 
@@ -151,10 +154,15 @@ public class CommandPremierTeamInvite extends CommandPremier {
             }
 
             String pseudo = user.getName();
+            if(!(ctx.getAuthorId().equals(idJoueur))){
+                confirmation.append("✅ Invitation envoyée à **").append(pseudo).append("**\n");
+                writeLogFile("logs.txt", pseudo + " | Invitation sent to join team " + team);
+                sendDemande(user, pseudo, team, idJoueur, ctx);
+            }
+        }
 
-            confirmation.append("✅ Invitation envoyée à **").append(pseudo).append("**\n");
-            writeLogFile("logs.txt", pseudo + " | Invitation sent to join team " + team);
-            sendDemande(user, pseudo, team, idJoueur, ctx);
+        if (confirmation.length() == 0) {
+            confirmation.append("❌ Aucun joueur valide n'a été mentionné.");
         }
 
         ctx.replyDeferred(confirmation.toString());

@@ -1,1 +1,99 @@
 [05/04/2026 14:20:07] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Valo.CommandValoRank.run() >> Code : ERREUR_API : java.lang.NullPointerException: Cannot invoke "java.util.ArrayList.isEmpty()" because "compte" is null
+[05/04/2026 21:54:00] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[05/04/2026 21:55:06] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :NINGEN
+[05/04/2026 22:02:18] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[05/04/2026 22:02:25] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :test
+[05/04/2026 22:03:48] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[05/04/2026 22:09:10] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[05/04/2026 22:09:21] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierSuprimerTeam.execute() >> The team test has been deleted
+[05/04/2026 22:09:54] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :NINGEN
+[05/04/2026 22:10:23] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.execute() >> iamtamere | Invitation sent to join team NINGEN
+[05/04/2026 22:10:23] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.execute() >> jadelysss | Invitation sent to join team NINGEN
+[05/04/2026 22:10:23] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.execute() >> noaaaah_493 | Invitation sent to join team NINGEN
+[05/04/2026 22:10:23] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.execute() >> le_psyko | Invitation sent to join team NINGEN
+[05/04/2026 22:10:32] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.lambda$sendDemande$2() >> le_psyko | accepted the invitation to join the team Premier
+[05/04/2026 22:10:32] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.validerInvitation() >> le_psyko is registered in the team : NINGEN
+[05/04/2026 22:10:35] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.lambda$sendDemande$2() >> noaaaah_493 | accepted the invitation to join the team Premier
+[05/04/2026 22:10:35] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.validerInvitation() >> noaaaah_493 is registered in the team : NINGEN
+[05/04/2026 22:11:01] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.lambda$sendDemande$2() >> iamtamere | accepted the invitation to join the team Premier
+[05/04/2026 22:11:01] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.validerInvitation() >> iamtamere is registered in the team : NINGEN
+[06/04/2026 16:17:39] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :testbug
+[06/04/2026 16:17:39] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 16:17:56] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierSuprimerTeam.execute() >> The team testbug has been deleted
+[06/04/2026 16:25:50] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 16:25:52] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.run() >> Code : SYNTAXE_INCORRECTE : bot.discordBot.utils.Exception.CapitaineException: Vous faite déjà partie d'une team Premier
+[06/04/2026 16:41:36] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.run() >> Code : SYNTAXE_INCORRECTE : bot.discordBot.utils.Exception.CapitaineException: Vous faite déjà partie d'une team Premier
+[06/04/2026 16:41:36] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 16:41:47] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :test
+[06/04/2026 16:44:04] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 16:47:16] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 16:54:53] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 16:56:07] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierSuprimerTeam.execute() >> The team test has been deleted
+[06/04/2026 16:56:09] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 16:56:33] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 16:56:33] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :test
+[06/04/2026 16:56:44] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierSuprimerJoueur.run() >> Code : SYNTAXE_INCORRECTE : bot.discordBot.utils.Exception.CapitaineException: Vous ne posséder aucune team Premier
+[06/04/2026 17:03:29] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierSuprimerJoueur.run() >> Code : SYNTAXE_INCORRECTE : bot.discordBot.utils.Exception.CapitaineException: Vous ne posséder pas de team Premier
+[06/04/2026 17:03:30] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:04:18] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:04:47] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierSuprimerTeam.execute() >> The team test has been deleted
+[06/04/2026 17:09:23] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:09:26] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :test
+[06/04/2026 17:09:53] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierSuprimerTeam.execute() >> The team test has been deleted
+[06/04/2026 17:30:50] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:31:44] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :test
+[06/04/2026 17:32:41] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierSuprimerTeam.execute() >> The team test has been deleted
+[06/04/2026 17:32:43] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:32:52] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :test
+[06/04/2026 17:35:37] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:36:25] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.run() >> Code : ECHEC : java.lang.NullPointerException: Cannot invoke "String.equals(Object)" because the return value of "bot.discordBot.utils.commands.datamanager.DataStructure.Equipe.getChefAdjId()" is null
+[06/04/2026 17:39:24] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:40:49] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:42:14] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:43:08] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:43:45] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:44:36] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:45:01] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:46:56] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:50:29] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 17:58:42] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 18:01:26] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 18:02:43] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierTeamInvite.run() >> Code : SYNTAXE_INCORRECTE : bot.discordBot.utils.Exception.EquipeException: Il existe aucune team Premier dont vous êtes le capitaine ou capitaine adjoint
+[06/04/2026 18:03:44] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 18:04:08] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierSuprimerTeam.execute() >> The team test has been deleted
+[06/04/2026 18:09:43] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 18:09:45] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :test
+[06/04/2026 18:10:26] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.run() >> 2026 | Code : AUCUNE_DONNEE_TROUVER
+[06/04/2026 18:10:43] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.lambda$sendInvitationAndListen$2() >> noaaaah_493declined the invitation at 2026-04-06T18:42 in test
+[06/04/2026 18:18:47] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 18:18:50] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.run() >> 2026 | Code : AUCUNE_DONNEE_TROUVER
+[06/04/2026 18:18:57] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.lambda$sendInvitationAndListen$2() >> noaaaah_493accept the invitation at 2026-04-06T18:50 in test
+[06/04/2026 18:19:47] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 18:19:48] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.restoreReminders() >> reminders performed
+[06/04/2026 18:20:46] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 18:20:47] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.restoreReminders() >> reminders performed
+[06/04/2026 18:20:54] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.lambda$sendInvitationAndListen$2() >> noaaaah_493accept the invitation at 2026-04-06T18:52 in test
+[06/04/2026 18:24:19] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 18:26:54] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Valo.CommandValoStats.run() >> noaaaah_493 | Code : ERREUR_API
+[06/04/2026 18:27:30] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Valo.CommandValoStats.run() >> noaaaah_493 | Code : ERREUR_API
+[06/04/2026 18:29:27] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Valo.CommandValoStats.run() >> noaaaah_493 | Code : ERREUR_API
+[06/04/2026 18:30:07] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 18:30:15] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Valo.CommandValoStats.run() >> noaaaah_493 | Code : ERREUR_API >> java.lang.NullPointerException: Cannot invoke "java.util.ArrayList.isEmpty()" because "compte" is null
+[06/04/2026 21:35:56] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 21:36:24] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :test
+[06/04/2026 21:36:52] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.lambda$sendInvitationAndListen$2() >> noaaaah_493accept the invitation at 2026-04-06T22:08 in test
+[06/04/2026 21:45:13] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 21:45:13] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.restoreReminders() >> reminders performed
+[06/04/2026 21:46:25] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 21:46:25] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.restoreReminders() >> reminders performed
+[06/04/2026 21:47:20] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.lambda$sendInvitationAndListen$2() >> noaaaah_493accept the invitation at 2026-04-06T22:28 in test
+[06/04/2026 21:48:43] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierCancelEvent.run() >> Code : ECHEC : java.time.format.DateTimeParseException: Text '06:04:20226 22:29' could not be parsed at index 6
+[06/04/2026 21:50:20] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 21:50:20] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.restoreReminders() >> reminders performed
+[06/04/2026 21:50:56] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierCancelEvent.run() >> Code : ECHEC : java.time.format.DateTimeParseException: Text '06:04:20226 22:29' could not be parsed at index 6
+[06/04/2026 21:51:39] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierCancelEvent.run() >> noaaaah_493 | Code : AUCUNE_DONNEE_TROUVER
+[06/04/2026 22:05:26] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start
+[06/04/2026 22:05:35] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierAddTeam.execute() >> new team created :test
+[06/04/2026 22:06:02] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.lambda$sendInvitationAndListen$2() >> noaaaah_493accept the invitation at 2026-04-06T22:37 in test
+[06/04/2026 22:07:12] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierEvent.lambda$sendInvitationAndListen$2() >> noaaaah_493accept the invitation at 2026-04-06T22:38 in test
+[06/04/2026 22:10:04] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.commands.Premier.CommandPremierSuprimerTeam.execute() >> The team test has been deleted

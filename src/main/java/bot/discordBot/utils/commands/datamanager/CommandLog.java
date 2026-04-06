@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 
 public class CommandLog {
 
-    private static final String LOG_FILE = "logs.txt";
+    private static final String LOG_FILE = "CommandLogs.txt";
 
     public CommandLog(String command, String auteur) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

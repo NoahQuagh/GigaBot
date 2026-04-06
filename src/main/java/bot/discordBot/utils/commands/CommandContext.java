@@ -131,10 +131,14 @@ public class CommandContext {
             return slashEvent.getSlashCommandInteraction()
                     .getOptions()
                     .stream()
-                    .map(SlashCommandInteractionOption::getUserValue)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toList());
+                    .findFirst()
+                    .map(sub -> sub.getOptions()
+                            .stream()
+                            .map(SlashCommandInteractionOption::getUserValue)
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .collect(Collectors.toList()))
+                    .orElse(List.of());
         }
         return messageEvent.getMessage().getMentionedUsers();
     }

@@ -13,9 +13,9 @@ import bot.discordBot.utils.commands.datamanager.DataStructure.Equipe;
 import java.util.ArrayList;
 
 import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
-import static bot.discordBot.utils.Procedure.EquipeProcedure.getTeamNameByIdCapitaine;
 import static bot.discordBot.utils.Success.success.EventSuccess;
 import static bot.discordBot.utils.commands.Code.SYNTAXE_INCORRECTE;
+import static bot.discordBot.utils.commands.datamanager.DataStructure.Equipe.getTeamNameByIdCapitaine;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandPremierSuprimerTeam extends CommandPremier {
@@ -44,7 +44,7 @@ public class CommandPremierSuprimerTeam extends CommandPremier {
 
         if (aEteSupprime) {
             DataManager.saveEquipes(equipes);
-            EventSuccess(ctx,"Suppression réussie","L'équipe **" + team + "** a été supprimée");
+            EventSuccess(ctx,"Suppression réussie","L'équipe **" + team.toUpperCase() + "** a été supprimée");
             writeLogFile("logs.txt", "The team " + team + " has been deleted");
         } else throw new EquipeException(ctx, "Impossible de supprimer cette team");
     }

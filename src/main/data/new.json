@@ -11,11 +11,11 @@
         "description": "Pour optimiser l\u0027utilisation des commandes `/valorant rank` et `/valorant stats`, un système d\u0027autocomplétion intelligente a été mis en place. Lorsque l\u0027utilisateur commence à taper un pseudo Valorant, le bot interroge en temps réel la base de données pour lui suggérer les comptes correspondants.De plus Le bot \u0027apprend\u0027 les nouveaux pseudos rentrés par l\u0027utilisateur pour les reproposés plus tard."
       },
       {
-        "nomNouveaute": "Nouvelle commande : `/premier createteam`",
+        "nomNouveaute": "Nouvelle commande : `/premier créerTeam`",
         "description": "Via une commande dédiée, l\u0027utilisateur définit le nom de son équipe dont il est automatiquement le capitaine. Par la suite, il pourra inviter des membres dans son équipe."
       },
       {
-        "nomNouveaute": "Nouvelle command : `/premier teaminvite`",
+        "nomNouveaute": "Nouvelle command : `/premier inviteJoueur`",
         "description": "Permet a un capitaine d\u0027équipe d\u0027envoyer des invitations par messagerie privée (DM) au joueur souhaité, ce dernier pouvant accepter ou refuser."
       },
       {

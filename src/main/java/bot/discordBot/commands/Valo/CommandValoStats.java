@@ -128,7 +128,7 @@ public class CommandValoStats extends CommandValo {
         }catch (SyntaxeException e){
             writeLogFile("logs.txt",ctx.getAuthorName()+" | Code : "+ Code.SYNTAXE_INCORRECTE);
         } catch (Exception e) {
-            writeLogFile("logs.txt", ctx.getAuthorName()+" | Code : "+ Code.ERREUR_API);
+            writeLogFile("logs.txt", ctx.getAuthorName()+" | Code : "+ Code.ERREUR_API+" >> "+e);
             ExceptionDefault(ctx,"Impossible de joindre le serveur de Riot");
         }
     }

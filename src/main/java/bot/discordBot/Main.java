@@ -69,7 +69,7 @@ public class Main {
             event.getAutocompleteInteraction().respondWithChoices(choices);
         });
 
-        //long serverId = Long.parseLong(configManager.getToml().getString("bot.test_server"));
+        long serverId = Long.parseLong(configManager.getToml().getString("bot.test_server"));
         new SlashCommandBuilder()
                 .setName("premier")
                 .setDescription("Commandes relatives au mode Premier de Valorant")
@@ -84,17 +84,17 @@ public class Main {
                         )
                 ))
                 .addOption(SlashCommandOption.createWithOptions(
-                        SlashCommandOptionType.SUB_COMMAND, "createteam", "Créer sa team Premier",
+                        SlashCommandOptionType.SUB_COMMAND, "créerTeam", "Créer sa team Premier",
                         Arrays.asList(
                                 SlashCommandOption.create(SlashCommandOptionType.STRING, "nom", "Nom de la team Premier", true)
                         )
                 ))
                 .addOption(SlashCommandOption.createWithOptions(
-                        SlashCommandOptionType.SUB_COMMAND, "supteam", "Supprimer sa team Premier",
+                        SlashCommandOptionType.SUB_COMMAND, "supTeam", "Supprimer sa team Premier",
                         Arrays.asList()
                 ))
                 .addOption(SlashCommandOption.createWithOptions(
-                        SlashCommandOptionType.SUB_COMMAND, "teamInvite", "Inviter des joueurs dans sa team Premier",
+                        SlashCommandOptionType.SUB_COMMAND, "inviteJoueur", "Inviter des joueurs dans sa team Premier",
                         Arrays.asList(
                                 SlashCommandOption.create(SlashCommandOptionType.USER, "joueur1", "joueur à inviter", true),
                                 SlashCommandOption.create(SlashCommandOptionType.USER, "joueur2", "Joueur à inviter", false),
@@ -104,8 +104,24 @@ public class Main {
                                 SlashCommandOption.create(SlashCommandOptionType.USER, "joueur6", "Joueur à inviter", false)
                         )
                 ))
-                //.createForServer(api.getServerById(serverId).get())
-                .createGlobal(api)
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "supJoueur", "Supprimer un joueur de votre team Premier",
+                        Arrays.asList(
+                                SlashCommandOption.create(SlashCommandOptionType.USER, "joueur", "joueur à supprimé", true)
+                        )
+                ))
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "cancelEvent", "Annuler un événement de game Premier",
+                        Arrays.asList(
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "jour", "Format jj", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "mois", "Format mm", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "année", "Format aaaa", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "heure", "Format hh", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "minute", "Format mm", true)
+                        )
+                ))
+                .createForServer(api.getServerById(serverId).get())
+                //.createGlobal(api)
                 .join();
         new SlashCommandBuilder()
                 .setName("valorant")

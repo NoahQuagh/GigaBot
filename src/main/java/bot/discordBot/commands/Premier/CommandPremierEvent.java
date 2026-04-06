@@ -27,14 +27,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
-import static bot.discordBot.utils.Procedure.EquipeProcedure.CapitaineNaPasDEquipe;
-import static bot.discordBot.utils.Procedure.EquipeProcedure.getTeamNameByIdCapitaine;
 import static bot.discordBot.utils.commands.Code.AUCUNE_DONNEE_TROUVER;
 import static bot.discordBot.utils.commands.Code.SYNTAXE_INCORRECTE;
+import static bot.discordBot.utils.commands.datamanager.DataStructure.Equipe.*;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandPremierEvent extends CommandPremier {
 
+    public static java.util.Map<String, java.util.concurrent.ScheduledFuture<?>> tachesActives = new java.util.HashMap<>();
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
 
     @SuppressWarnings("unchecked")
@@ -43,7 +43,11 @@ public class CommandPremierEvent extends CommandPremier {
         netoyageRappel();
         if (ctx.isSlash()) ctx.defer();
         try {
-            if(CapitaineNaPasDEquipe(ctx.getAuthorId())) throw new EquipeException(ctx, "Vous ne possédez pas de team Premier");
+            if(CapitaineNaPasDEquipe(ctx.getAuthorId())){
+                if(!(AdjointNaPasDEquipe(ctx.getAuthorId()))){
+                    execute(ctx,args[1]+":"+args[2]+":"+args[3],args[4]+":"+args[5],getTeamNameByIdAdjoint(ctx.getAuthorId()));
+                }else throw new EquipeException(ctx, "Il existe aucune team Premier dont vous êtes le capitaine ou capitaine adjoint");
+            }
 
             execute(ctx,args[1]+":"+args[2]+":"+args[3],args[4]+":"+args[5],getTeamNameByIdCapitaine(ctx.getAuthorId()));
 
@@ -88,14 +92,15 @@ public class CommandPremierEvent extends CommandPremier {
 
                             scheduleReminder(user, dateTimeEvent);
 
-                            updater.setContent("✅ Ta participation est enregistrée ! Tu receveras un rappel **30min avant** le debut de la partie.")
+                            updater.setContent("✅ Ta participation est enregistrée ! Tu receveras un rappel **30min** avant le debut de la partie.")
                                     .removeAllEmbeds()
                                     .removeAllComponents()
                                     .applyChanges();
 
                             writeLogFile("logs.txt", user.getName()+"accept the invitation at "+dateTimeEvent+" in "+team);
 
-                            String chefId = DataManager.loadEquipes().get(0).getChefId();
+                            String chefId = getEquipeByEquipeName(team).getChefId();
+
                             user.getApi().getUserById(chefId).thenAccept(chef -> {
                                 chef.sendMessage("✅ **" + user.getName() + "** a accepté l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**");
                             });
@@ -123,9 +128,13 @@ public class CommandPremierEvent extends CommandPremier {
         long delay = Duration.between(now, reminderTime).getSeconds();
 
         if (delay > 0) {
-            scheduler.schedule(() -> {
+            java.util.concurrent.ScheduledFuture<?> task = scheduler.schedule(() -> {
                 sendReminderEmbed(user);
-            }, delay, TimeUnit.SECONDS);
+                tachesActives.remove(user.getIdAsString() + ":" + eventTime);
+            }, delay, java.util.concurrent.TimeUnit.SECONDS);
+
+            tachesActives.put(user.getIdAsString() + ":" + eventTime, task);
+
         } else {
             sendReminderEmbed(user);
         }
@@ -179,8 +188,8 @@ public class CommandPremierEvent extends CommandPremier {
                         sendInvitationAndListen(user, date, heure, dateTimeEvent, team);
 
                         ctx.replyDeferred("✅ Invitation envoyé à **" + user.getName() +
-                                "** pour la game du **" + dateTimeEvent.toString().replace("T", " à ").replace("-", "/") +
-                                "** dans la team **" + team + "**");
+                                "** pour la game du **" + date.replace(":","/") +" à "+heure+
+                                "** dans la team **" + team.toUpperCase() + "**");
 
                     }).exceptionally(e -> {
                         writeLogFile("logs.txt", currentId + " | " + AUCUNE_DONNEE_TROUVER + " >> " + e);
@@ -191,7 +200,6 @@ public class CommandPremierEvent extends CommandPremier {
                 return;
             }
         }
-        throw new EquipeException(ctx, "Ce nom de team n'existe pas");
     }
 
 

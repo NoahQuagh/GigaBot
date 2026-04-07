@@ -32,11 +32,11 @@ public class CommandValoRank extends CommandValo {
         if (ctx.isSlash()) ctx.defer();
         try {
             String pseudoRaw = ctx.isSlash()
-                    ? ctx.getOptionString("pseudotag").orElseThrow(() -> new SyntaxeException(ctx, "/valo rank <pseudo> <tag>"))
+                    ? ctx.getOptionString("pseudotag").orElseThrow(() -> new SyntaxeException(ctx, "/valo rank <pseudo#tag>"))
                     : (args.length >= 2 ? args[1] : null);
 
 
-            if (pseudoRaw == null) throw new SyntaxeException(ctx, "/valo rank <pseudo> <tag>");
+            if (pseudoRaw == null) throw new SyntaxeException(ctx, "/valo rank <pseudo#tag>");
 
 
             String[] tmp= pseudoRaw.split("#");

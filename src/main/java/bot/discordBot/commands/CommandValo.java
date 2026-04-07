@@ -1,7 +1,9 @@
 package bot.discordBot.commands;
 
+import bot.discordBot.commands.Valo.CommandValoDeleteTrack;
 import bot.discordBot.commands.Valo.CommandValoRank;
 import bot.discordBot.commands.Valo.CommandValoStats;
+import bot.discordBot.commands.Valo.CommandValoTrack;
 import bot.discordBot.utils.Exception.SyntaxeException;
 import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.Command;
@@ -33,8 +35,8 @@ public class CommandValo implements CommandExecutor {
 
     @Override
     public HashMap<Integer, String> getVariation() {
-        variation.put(0,"Obtenir le rang d'un(e) joueur/joueuse_/valo rank <pseudo>#<tag>");
-        variation.put(1,"Obtenir les stats d'un(e) joueur/joueuse_/valo stats <pseudo>#<tag>");
+        variation.put(0,"Obtenir le rang d'un(e) joueur/joueuse_/valo rank <pseudo#tag>");
+        variation.put(1,"Obtenir les stats d'un(e) joueur/joueuse_/valo stats <pseudo#tag>");
         return variation;
     }
 
@@ -47,6 +49,10 @@ public class CommandValo implements CommandExecutor {
                     new CommandValoRank().run(ctx,command,args);
                 }else if(args[0].equalsIgnoreCase("-stats")){
                     new CommandValoStats().run(ctx,command,args);
+                }else if(args[0].equalsIgnoreCase("-setTracker")){
+                    new CommandValoTrack().run(ctx,command,args);
+                }else if(args[0].equalsIgnoreCase("-delTracker")){
+                    new CommandValoDeleteTrack().run(ctx,command,args);
                 }
             }else throw new SyntaxeException(ctx,"/"+getName()+" <--here");
         }catch (SyntaxeException e){

@@ -103,6 +103,19 @@ public class DataManager {
         } catch (Exception e) { return new ArrayList<>(); }
     }
 
+    private static final File FILE_TRACKER = new File("src/main/data/trackerValo.json");
+    // SAUVEGARDER // SAUVEGARDER RAPPELS
+    public static void saveTrackedPlayer(ArrayList<TrackedPlayer> list) {
+        try (Writer w = new FileWriter(FILE_TRACKER)) { gson.toJson(list, w); } catch (IOException e) {}
+    }
+    // RAPPELS // SAUVEGARDER RAPPELS
+    public static ArrayList<TrackedPlayer> loadTrackedPlayer() {
+        if (!FILE_TRACKER.exists()) return new ArrayList<>();
+        try (Reader r = new FileReader(FILE_TRACKER)) {
+            return gson.fromJson(r, new TypeToken<ArrayList<TrackedPlayer>>(){}.getType());
+        } catch (Exception e) { return new ArrayList<>(); }
+    }
+
 
     public static Gson getGson() {
         return gson;

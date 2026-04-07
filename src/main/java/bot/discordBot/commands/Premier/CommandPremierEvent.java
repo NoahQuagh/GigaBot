@@ -35,7 +35,7 @@ import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 public class CommandPremierEvent extends CommandPremier {
 
     public static java.util.Map<String, java.util.concurrent.ScheduledFuture<?>> tachesActives = new java.util.HashMap<>();
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
+    public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
 
     @SuppressWarnings("unchecked")
     @Override

@@ -3,15 +3,16 @@ package bot.discordBot;
 import bot.discordBot.utils.ConfigManager;
 import bot.discordBot.utils.commands.MessageManager;
 import bot.discordBot.utils.commands.datamanager.DataManager;
-import bot.discordBot.utils.commands.datamanager.DataStructure.Bug;
-import bot.discordBot.utils.commands.datamanager.DataStructure.Nouveaute;
-import bot.discordBot.utils.commands.datamanager.DataStructure.Rappel;
-import bot.discordBot.utils.commands.datamanager.DataStructure.StrucNew;
+import bot.discordBot.utils.commands.datamanager.DataStructure.*;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.interaction.*;
+import org.json.JSONObject;
+
+import java.net.http.HttpResponse;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.List;
 
@@ -23,9 +24,11 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static bot.discordBot.commands.Premier.CommandPremierEvent.netoyageRappel;
-import static bot.discordBot.commands.Premier.CommandPremierEvent.scheduleReminder;
+import static bot.discordBot.commands.Premier.CommandPremierEvent.*;
+import static bot.discordBot.utils.Procedure.ApiProcedure.ApiRiotRequete;
+import static bot.discordBot.utils.Procedure.ApiProcedure.getRankTxtByInt;
 import static bot.discordBot.utils.Procedure.ValoDisProcedure.*;
+import static bot.discordBot.utils.Success.success.sendRankupMessage;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 import static java.util.Arrays.stream;
 
@@ -33,7 +36,7 @@ public class Main {
 
     public static DiscordApi api;
     private static ConfigManager configManager;
-    public static String version ="1.0.3";
+    public static String version ="1.0.4";
 
     public static void main(String[] args) {
         entrerNew();
@@ -120,8 +123,8 @@ public class Main {
                                 SlashCommandOption.create(SlashCommandOptionType.STRING, "minute", "Format mm", true)
                         )
                 ))
-                .createForServer(api.getServerById(serverId).get())
-                //.createGlobal(api)
+                //.createForServer(api.getServerById(serverId).get())
+                .createGlobal(api)
                 .join();
         new SlashCommandBuilder()
                 .setName("valorant")
@@ -150,6 +153,30 @@ public class Main {
                                         .build()
                         )
                 ))
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "setTracker", "Affiche le peak rank du joueur indiquer dans ce salon",
+                        Arrays.asList(
+                                new SlashCommandOptionBuilder()
+                                        .setType(SlashCommandOptionType.STRING)
+                                        .setName("pseudotag")
+                                        .setDescription("Pseudo#tag du joueur Valorant")
+                                        .setRequired(true)
+                                        .setAutocompletable(true)
+                                        .build()
+                        )
+                ))
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "delTracker", "Arrête de suivre le peak rank du joueur indiquer dans ce salon",
+                        Arrays.asList(
+                                new SlashCommandOptionBuilder()
+                                        .setType(SlashCommandOptionType.STRING)
+                                        .setName("pseudotag")
+                                        .setDescription("Pseudo#tag du joueur Valorant")
+                                        .setRequired(true)
+                                        .setAutocompletable(true)
+                                        .build()
+                        )
+                ))
                 .createGlobal(api)
                 .join();
         new SlashCommandBuilder()
@@ -160,7 +187,7 @@ public class Main {
         new SlashCommandBuilder()
                 .setName("log")
                 .setDescription("Obtenir les logs du bot")
-                .createGlobal(api)
+                .createForServer(api.getServerById(serverId).get())
                 .join();
         new SlashCommandBuilder()
                 .setName("help")
@@ -198,6 +225,51 @@ public class Main {
 
         writeLogFile("logs.txt","bot start");
         restoreReminders(api);
+        startTracking(api);
+    }
+
+    public static void startTracking(DiscordApi api) {
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                ArrayList<TrackedPlayer> players = DataManager.loadTrackedPlayer();
+                if (players == null || players.isEmpty()) return;
+
+                for (TrackedPlayer player : players) {
+                    try {
+                        String[] pseudoRaw = player.getPseudoRaw().split("#");
+
+                        Thread.sleep(2000);
+
+                        HttpResponse<String> response = ApiRiotRequete("https://api.henrikdev.xyz/valorant/v2/mmr/eu/" + pseudoRaw[0] + "/" + pseudoRaw[1]);
+
+                        if (response.statusCode() != 200) continue;
+
+                        JSONObject json = new JSONObject(response.body());
+                        if (!json.has("data")) continue;
+
+                        JSONObject data = json.getJSONObject("data");
+                        JSONObject current = data.getJSONObject("current_data");
+
+                        int currentTier = current.getInt("currenttier");
+                        String rankName = getRankTxtByInt(currentTier);
+                        String rankImage = current.getJSONObject("images").getString("large");
+
+                        if (currentTier > player.getPeakTier()) {
+                            sendRankupMessage(api, player, rankName, rankImage);
+                            System.out.println("pass");
+                            player.setPeakTier(currentTier);
+                            DataManager.saveTrackedPlayer(players);
+
+                            writeLogFile("logs.txt", "Rankup détecté pour " + player.getPseudoRaw() + " -> " + rankName);
+                        }
+                    } catch (Exception e) {
+                        writeLogFile("logs.txt", "Erreur tracking joueur " + player.getPseudoRaw() + " : " + e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                writeLogFile("logs.txt", "Erreur globale boucle tracking : " + e.getMessage());
+            }
+        }, 0, 1, TimeUnit.MINUTES);
     }
 
     public static ConfigManager getConfigManager() {
@@ -237,13 +309,12 @@ public class Main {
     }
 
     private static void entrerNew(){
-        /*
+/*
         ArrayList<Nouveaute> n1 = new ArrayList<>();
-        n1.add(new Nouveaute("Transition vers les 'Slash Commands'","L'architecture du bot a été intégralement migrée des commandes textuelles classiques vers les Slash Commands natives de Discord. L'utilisateur bénéficie désormais d'une interface visuelle dès qu'il tape `/`. Toutes les commandes disponibles sont listées avec leur description."));
-        n1.add(new Nouveaute("Système d'Autocomplétion Dynamique","Pour optimiser l'utilisation des commandes `/valorant rank` et `/valorant stats`, un système d'autocomplétion intelligente a été mis en place. Lorsque l'utilisateur commence à taper un pseudo Valorant, le bot interroge en temps réel la base de données pour lui suggérer les comptes correspondants.De plus Le bot 'apprend' les nouveaux pseudos rentrés par l'utilisateur pour les reproposés plus tard."));
-        n1.add(new Nouveaute("Nouvelle commande : !premier -createteam","Via une commande dédiée, l'utilisateur définit le nom de son équipe dont il est automatiquement le capitaine. Par la suite, il pourra inviter des membres dans son équipe."));
-        n1.add(new Nouveaute("Nouvelle command : !premier -teaminvite","Permet a un capitaine d'équipe d'envoyer des invitations par messagerie privée (DM) au joueur souhaité, ce dernier pouvant accepter ou refuser."));
-        n1.add(new Nouveaute("Nouvelle command : !premier -supteam","Permet la gestion du cycle de vie des équipes. Elle offre aux capitaines la possibilité de dissoudre leur équipe, libérant ainsi le nom de l'équipe et ses joueurs."));
+        n1.add(new Nouveaute("Nouvelle commande : /premier cancelEvent","La commande identifie l'équipe du capitaine et supprime le rappel prévu à la date indiquée."));
+        n1.add(new Nouveaute("Nouvelle command : /premier supJoueur","Permet au capitaine de supprimé de son équipe le joueur mentionné dans la commande."));
+        n1.add(new Nouveaute("Nouvelle command : /premier setTracker","Un système proactif qui surveille les performances des joueurs et annonce les nouveaux records (Peak Rank) dans le salon sur lequel la commande fut envoyée."));
+        n1.add(new Nouveaute("Nouvelle command : /premier delTracker","Suppime le tracking du Peak Rank du joueur indiqué."));
 
 
         ArrayList<Bug> b1 = new ArrayList<>();
@@ -258,7 +329,7 @@ public class Main {
         paquet.add(new StrucNew(version,n1,b1));
 
         DataManager.saveNew(paquet);
-        */
 
+*/
     }
 }

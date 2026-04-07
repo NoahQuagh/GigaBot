@@ -49,6 +49,27 @@
         "resolution": "La sauvegarde est désormais effectuée une seule fois aprés la complétion de la boucle de traitement en mémoire."
       }
     ]
+  },
+  {
+    "version": "1.0.4",
+    "nouveau": [
+      {
+        "nomNouveaute": "Nouvelle commande : /premier cancelEvent",
+        "description": "La commande identifie l\u0027équipe du capitaine et supprime le rappel prévu à la date indiquée."
+      },
+      {
+        "nomNouveaute": "Nouvelle command : /premier supJoueur",
+        "description": "Permet au capitaine de supprimé de son équipe le joueur mentionné dans la commande."
+      },
+      {
+        "nomNouveaute": "Nouvelle command : /premier setTracker",
+        "description": "Un système proactif qui surveille les performances des joueurs sur Valorant et annonce leurs nouveaux records (Peak Rank) dans le salon sur lequel la commande fut envoyée."
+      },
+      {
+        "nomNouveaute": "Nouvelle command : /premier delTracker",
+        "description": "Suppime le tracking du Peak Rank du joueur indiqué."
+      }
+    ],
+    "bug": []
   }
-
 ]

@@ -54,12 +54,11 @@ public class CommandNew implements CommandExecutor {
 
     private void afficherNouveate(CommandContext ctx,StrucNew currentVersion){
         EmbedBuilder embed = new EmbedBuilder()
-                .setTitle("**Nouveautés :** v " + currentVersion.getVersion()) // Supposant que tu as getVersion()
+                .setTitle("**NOUVEAUTÉS :** v " + currentVersion.getVersion()) // Supposant que tu as getVersion()
                 .setColor(Color.green);
 
         // 1. Les Nouveautés
         if(currentVersion.getNouveau() != null && !currentVersion.getNouveau().isEmpty()){
-            embed.addField("\u200B", "\u200B"); // Espace vide propre
             for(Nouveaute n : currentVersion.getNouveau()){
                 embed.addField("**" + n.getNomNouveaute() + "**", "- " + n.getDescription());
             }

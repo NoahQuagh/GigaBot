@@ -38,7 +38,7 @@ public class CommandPremierCancelEvent extends CommandPremier {
             if (tousLesRappels == null || tousLesRappels.isEmpty())
                 throw new RappelException(ctx, "Aucun rappel n'est programmé.");
 
-            execute(ctx, args[1] + ":" + args[2] + ":" + args[3], args[4] + ":" + args[5], getTeamNameByIdAdjoint(ctx.getAuthorId()), tousLesRappels, equipe);
+            execute(ctx, args[1] + ":" + args[2] + ":" + args[3], args[4] + ":" + args[5], getTeamNameByIdAdjoint(ctx.getAuthorId()), tousLesRappels, equipe,0);
         }catch (EquipeException e){
             writeLogFile("logs.txt",ctx.getAuthorName()+" | Code : "+ AUCUNE_DONNEE_TROUVER);
         }catch (Exception e){
@@ -47,7 +47,7 @@ public class CommandPremierCancelEvent extends CommandPremier {
         }
     }
 
-    public void execute(CommandContext ctx, String date, String heure, String team,ArrayList<Rappel> tousLesRappels,Equipe equipe){
+    public void execute(CommandContext ctx, String date, String heure, String team,ArrayList<Rappel> tousLesRappels,Equipe equipe,int n){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd:MM:yyyy HH:mm");
         LocalDateTime dateTimeEvent = LocalDateTime.parse(heure+ " " + date, formatter);
 
@@ -68,7 +68,11 @@ public class CommandPremierCancelEvent extends CommandPremier {
 
             }
         }
-        EventSuccess(ctx,"Évènement annulé avec succès","L'évènement du "+date.replace(":","/")+" à "+heure+" est annulé");
+        if(n==1){
+            EventSuccess(ctx,"Évènement annulé","L'évènement du "+heure.replace(":","/")+" à "+date+" est annulé par manque de joueur");
+        }else {
+            EventSuccess(ctx,"Évènement annulé","L'évènement du "+heure.replace(":","/")+" à "+date+" est annulé");
+        }
         DataManager.saveRappels(tousLesRappels);
 
     }

@@ -12,6 +12,7 @@ import bot.discordBot.utils.commands.datamanager.DataStructure.Equipe;
 import bot.discordBot.utils.commands.datamanager.DataStructure.Rappel;
 import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.entity.message.component.ButtonStyle;
+import org.javacord.api.entity.message.embed.Embed;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
 
@@ -22,10 +23,12 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static bot.discordBot.Main.api;
 import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
 import static bot.discordBot.utils.commands.Code.AUCUNE_DONNEE_TROUVER;
 import static bot.discordBot.utils.commands.Code.SYNTAXE_INCORRECTE;
@@ -36,6 +39,7 @@ public class CommandPremierEvent extends CommandPremier {
 
     public static java.util.Map<String, java.util.concurrent.ScheduledFuture<?>> tachesActives = new java.util.HashMap<>();
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
+    public int nbRefu = 0;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -43,14 +47,28 @@ public class CommandPremierEvent extends CommandPremier {
         netoyageRappel();
         if (ctx.isSlash()) ctx.defer();
         try {
-            if(CapitaineNaPasDEquipe(ctx.getAuthorId())){
-                if(!(AdjointNaPasDEquipe(ctx.getAuthorId()))){
-                    execute(ctx,args[1]+":"+args[2]+":"+args[3],args[4]+":"+args[5],getTeamNameByIdAdjoint(ctx.getAuthorId()));
-                }else throw new EquipeException(ctx, "Il existe aucune team Premier dont vous êtes le capitaine ou capitaine adjoint");
+            String teamName = null;
+
+            if (!CapitaineNaPasDEquipe(ctx.getAuthorId())) {
+                teamName = getTeamNameByIdCapitaine(ctx.getAuthorId());
+            } else if (!AdjointNaPasDEquipe(ctx.getAuthorId())) {
+                teamName = getTeamNameByIdAdjoint(ctx.getAuthorId());
             }
 
-            execute(ctx,args[1]+":"+args[2]+":"+args[3],args[4]+":"+args[5],getTeamNameByIdCapitaine(ctx.getAuthorId()));
+            if (teamName == null) {
+                throw new EquipeException(ctx, "Il n'existe aucune team Premier dont vous êtes le capitaine ou l'adjoint.");
+            }
 
+            Equipe equipe = getEquipeByEquipeName(teamName);
+            if (equipe == null) {
+                throw new EquipeException(ctx, "Erreur interne : l'équipe '" + teamName + "' est introuvable.");
+            }
+
+            if (equipe.getJoueurIds().size() < 5) {
+                throw new EquipeException(ctx, "Il n'y a pas assez de joueurs dans votre team (minimum 5).");
+            }
+
+            execute(ctx, args[1] + ":" + args[2] + ":" + args[3], args[4] + ":" + args[5], teamName);
         }catch (SyntaxeException e){
             writeLogFile("logs.txt",ctx.getAuthorName()+" | Code : "+ SYNTAXE_INCORRECTE);
         }catch (DateException e){
@@ -64,7 +82,8 @@ public class CommandPremierEvent extends CommandPremier {
 
     }
 
-    private void sendInvitationAndListen(User user, String date, String heure,LocalDateTime dateTimeEvent,String team) {
+    private void sendInvitationAndListen(CommandContext ctx,User user, String date, String heure,LocalDateTime dateTimeEvent,String team,String salonid) {
+
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("Invitation Premier")
                 .setDescription("Vous avez été invité à une game de Premier le **" + date.replace(":", "/") + "** à **" + heure + "**"+" dans la team **"+team+"**.")
@@ -84,7 +103,17 @@ public class CommandPremierEvent extends CommandPremier {
                         String customId = clickEvent.getButtonInteraction().getCustomId();
                         var updater = message.createUpdater();
 
+                        Equipe equipe = getEquipeByEquipeName(team);
+
+
                         if (customId.startsWith("event_yes")) {
+                            if(nbRefu==equipe.getJoueurIds().size()-4){
+                                updater.setContent("✅ Merci pour ta participation mais l'évènement est annulé dù à un manque de joueur.")
+                                        .removeAllEmbeds()
+                                        .removeAllComponents()
+                                        .applyChanges();
+                                return;
+                            }
 
                             ArrayList<Rappel> rappels = DataManager.loadRappels();
                             rappels.add(new Rappel(user.getIdAsString(), dateTimeEvent));
@@ -101,19 +130,37 @@ public class CommandPremierEvent extends CommandPremier {
 
                             String chefId = getEquipeByEquipeName(team).getChefId();
 
+                            api.getTextChannelById(salonid).ifPresentOrElse(channel -> {
+                                channel.sendMessage("✅ **" + user.getName() + "** a accepté l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**");
+                            }, () -> {
+                                writeLogFile("logs.txt", " problème rencontrer pour l'envoie dans le salon  "+salonid+" pour "+team);
+                            });
+
                             user.getApi().getUserById(chefId).thenAccept(chef -> {
                                 chef.sendMessage("✅ **" + user.getName() + "** a accepté l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**");
                             });
 
                         } else {
+
                             updater.setContent("❌ Invitation déclinée.")
                                     .removeAllEmbeds()
                                     .removeAllComponents()
                                     .applyChanges();
                             String chefId = DataManager.loadEquipes().get(0).getChefId();
+
+                            api.getTextChannelById(salonid).ifPresentOrElse(channel -> {
+                                channel.sendMessage("❌ **" + user.getName() + "** a refusé l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**");
+                            }, () -> {
+                                writeLogFile("logs.txt", " problème rencontrer pour l'envoie dans le salon  "+salonid+" pour "+team);
+                            });
+
                             user.getApi().getUserById(chefId).thenAccept(chef -> {
                                 chef.sendMessage("❌ **" + user.getName() + "** a refusé l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**");
                             });
+                            nbRefu++;
+                            if(nbRefu==equipe.getJoueurIds().size()-4){
+                                new CommandPremierCancelEvent().execute(ctx,heure.replace("/",":"),date,team,DataManager.loadRappels(),equipe,1);
+                            }
                             writeLogFile("logs.txt", user.getName()+"declined the invitation at "+dateTimeEvent+" in "+team);
                         }
                     }).removeAfter(1, TimeUnit.DAYS);
@@ -181,15 +228,20 @@ public class CommandPremierEvent extends CommandPremier {
 
         ArrayList<Equipe> equipes = DataManager.loadEquipes();
 
+        String channelId = ctx.getChannel()
+                .map(channel -> channel.getIdAsString())
+                .orElse("");
+
+
         for (Equipe equipe : equipes) {
             if (equipe.getEquipeId().equalsIgnoreCase(team)) {
                 for (String currentId : equipe.getJoueurIds()) {
-                    ctx.getApi().getUserById(currentId).thenAccept(user -> {
-                        sendInvitationAndListen(user, date, heure, dateTimeEvent, team);
 
-                        ctx.replyDeferred("✅ Invitation envoyé à **" + user.getName() +
-                                "** pour la game du **" + date.replace(":","/") +" à "+heure+
-                                "** dans la team **" + team.toUpperCase() + "**");
+                    if (currentId == null || currentId.trim().isEmpty()) continue;
+
+                    ctx.getApi().getUserById(currentId).thenAccept(user -> {
+                        sendInvitationAndListen(ctx,user, date, heure, dateTimeEvent, team,channelId);
+                        writeLogFile("logs.txt", currentId + " | invitatiion envoyé à "+currentId);
 
                     }).exceptionally(e -> {
                         writeLogFile("logs.txt", currentId + " | " + AUCUNE_DONNEE_TROUVER + " >> " + e);
@@ -197,10 +249,13 @@ public class CommandPremierEvent extends CommandPremier {
                         return null;
                     });
                 }
+                EmbedBuilder embed = new EmbedBuilder()
+                        .setTitle("Invitation envoyé :")
+                        .setDescription("Game du **" + date.replace(":","/") +" à "+heure+"** dans la team **" + team.toUpperCase() +"**")
+                        .setColor(Color.GREEN);
+                ctx.replyDeferred(embed);
                 return;
             }
         }
     }
-
-
 }

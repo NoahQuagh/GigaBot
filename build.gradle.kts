@@ -14,6 +14,7 @@ dependencies {
     implementation("com.moandjiezana.toml:toml4j:0.7.2")
     implementation("org.json:json:20231013")
     implementation("com.google.code.gson:gson:2.10.1")
+
 }
 
 tasks.jar {

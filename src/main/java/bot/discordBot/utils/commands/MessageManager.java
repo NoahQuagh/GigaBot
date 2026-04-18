@@ -51,6 +51,11 @@ public class MessageManager {
                 new CommandNew(),
                 "nouveauté"
         ));
+        registry.addCommand(new Command(
+                "edtdev",
+                new CommandEdtDev(),
+                "edtdev"
+        ));
     }
 
     private static final String PREFIX = Main.getConfigManager().getToml().getString("bot.prefix");

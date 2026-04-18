@@ -31,6 +31,10 @@ public class CommandPremier implements CommandExecutor {
             new CommandPremierSuprimerJoueur().run(ctx, command, args);
         }else if(args[0].equalsIgnoreCase("-cancelEvent")) {
             new CommandPremierCancelEvent().run(ctx, command, args);
+        }else if(args[0].equalsIgnoreCase("-nouveauCapitaine")) {
+            new CommandPremierNewCapitaine().run(ctx, command, args);
+        }else if(args[0].equalsIgnoreCase("-stratégieAgent")) {
+            new CommandPremierNewCapitaine().run(ctx, command, args);
         }
     }
 

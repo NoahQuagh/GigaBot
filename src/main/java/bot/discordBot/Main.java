@@ -36,7 +36,7 @@ public class Main {
 
     public static DiscordApi api;
     private static ConfigManager configManager;
-    public static String version ="1.0.4";
+    public static String version ="1.0.5";
 
     public static void main(String[] args) {
         entrerNew();
@@ -123,6 +123,23 @@ public class Main {
                                 SlashCommandOption.create(SlashCommandOptionType.STRING, "minute", "Format mm", true)
                         )
                 ))
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "nouveauCapitaine", "Permet de définir un nouveau capitaine de votre team Premier",
+                        Arrays.asList(
+                                SlashCommandOption.create(SlashCommandOptionType.USER, "joueur", "Pseudo du nouveau capitaine", true)
+                        )
+                ))
+                .addOption(SlashCommandOption.createWithOptions(
+                        SlashCommandOptionType.SUB_COMMAND, "stratégieAgent", "Permet de définir une stratégie d'équipe",
+                        Arrays.asList(
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "map", "Map sur laquelle éffectué la stratégie", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "agent1", "Agent Valorant 1", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "agent2", "Agent Valorant 2", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "agent3", "Agent Valorant 3", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "agent4", "Agent Valorant 4", true),
+                                SlashCommandOption.create(SlashCommandOptionType.STRING, "agent5", "Agent Valorant 5", true)
+                        )
+                ))
                 //.createForServer(api.getServerById(serverId).get())
                 .createGlobal(api)
                 .join();
@@ -188,6 +205,11 @@ public class Main {
                 .setName("log")
                 .setDescription("Obtenir les logs du bot")
                 .createForServer(api.getServerById(serverId).get())
+                .join();
+        new SlashCommandBuilder()
+                .setName("edtdev")
+                .setDescription("Obtenir les logs du bot")
+                .createGlobal(api)
                 .join();
         new SlashCommandBuilder()
                 .setName("help")

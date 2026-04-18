@@ -33,6 +33,22 @@ public class Equipe {
         return chefAdjId;
     }
 
+    public void setEquipeId(String equipeId) {
+        this.equipeId = equipeId;
+    }
+
+    public void setChefId(String chefId) {
+        this.chefId = chefId;
+    }
+
+    public void setChefAdjId(String chefAdjId) {
+        this.chefAdjId = chefAdjId;
+    }
+
+    public void setJoueurIds(ArrayList<String> joueurIds) {
+        this.joueurIds = joueurIds;
+    }
+
     public static boolean nomEquipteUtiliser(String nomteam){
         ArrayList<Equipe> equipes = DataManager.loadEquipes();
         if (equipes == null) return false;
@@ -145,5 +161,21 @@ public class Equipe {
             }
         }
         return null;
+    }
+
+    public static boolean successionCapitaine(String team,String idJoueur){
+        ArrayList<Equipe> equipes = DataManager.loadEquipes();
+        if (equipes == null) return false;
+        for(Equipe equipe : equipes){
+            if(equipe.getEquipeId().equals(team)){
+                equipe.setChefId(idJoueur);
+                if(equipe.getChefAdjId().equals(idJoueur)){
+                    equipe.setChefAdjId("");
+                }
+                DataManager.saveEquipes(equipes);
+                return true;
+            }
+        }
+        return false;
     }
 }

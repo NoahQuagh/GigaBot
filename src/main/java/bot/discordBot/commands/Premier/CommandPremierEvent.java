@@ -107,7 +107,7 @@ public class CommandPremierEvent extends CommandPremier {
 
 
                         if (customId.startsWith("event_yes")) {
-                            if(nbRefu==equipe.getJoueurIds().size()-4){
+                            if(nbRefu>=equipe.getJoueurIds().size()-4){
                                 updater.setContent("✅ Merci pour ta participation mais l'évènement est annulé dù à un manque de joueur.")
                                         .removeAllEmbeds()
                                         .removeAllComponents()
@@ -141,6 +141,13 @@ public class CommandPremierEvent extends CommandPremier {
                             });
 
                         } else {
+                            if(nbRefu>=equipe.getJoueurIds().size()-4){
+                                updater.setContent("❌ Invitation déclinée.")
+                                        .removeAllEmbeds()
+                                        .removeAllComponents()
+                                        .applyChanges();
+                                return;
+                            }
 
                             updater.setContent("❌ Invitation déclinée.")
                                     .removeAllEmbeds()

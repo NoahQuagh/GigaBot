@@ -4,7 +4,7 @@ import bot.discordBot.commands.CommandHelp;
 import bot.discordBot.utils.commands.Command;
 import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.MessageManager;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
+import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.awt.*;
 
@@ -20,7 +20,7 @@ public class CommandHelpAll extends CommandHelp {
             for (Command cmd : MessageManager.getRegistry().getCommands()) {
                 embed.addField("","- "+cmd.getDescription()+"```/" + cmd.getId()+"```", false);
             }
-            ctx.replyDeferred(embed);
+            ctx.getEvent().getHook().sendMessageEmbeds(embed.build()).queue();
         }
     }
 }

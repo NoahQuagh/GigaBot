@@ -1,196 +1,250 @@
-// bot/discordBot/utils/commands/CommandContext.java
 package bot.discordBot.utils.commands;
 
-import org.javacord.api.DiscordApi;
-import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.message.MessageAuthor;
-import org.javacord.api.entity.message.MessageFlag;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.user.User;
-import org.javacord.api.event.interaction.SlashCommandCreateEvent;
-import org.javacord.api.event.message.MessageCreateEvent;
-import org.javacord.api.interaction.SlashCommandInteraction;
-import org.javacord.api.interaction.SlashCommandInteractionOption;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.modals.Modal;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+/**
+ * Conteneur unifié servant de contexte d'exécution pour toutes les commandes du bot.
+ * Cette classe encapsule et harmonise les différents types d'événements JDA
+ * (commandes Slash ou formulaires Modals) afin d'offrir une interface d'interaction unique pour récupérer
+ * les auteurs, les salons, les mentions et envoyer des réponses.
+ */
 public class CommandContext {
 
-    private final MessageCreateEvent messageEvent;
-    private final SlashCommandCreateEvent slashEvent;
+    private final SlashCommandInteractionEvent slashEvent;
+    private final ModalInteractionEvent modalEvent;
+    private boolean deferred = false;
 
-    // Constructeur pour les anciens messages
-    public CommandContext(MessageCreateEvent event) {
-        this.messageEvent = event;
+    /**
+     * Construit un contexte à partir d'un événement d'interaction de commande Slash.
+     *
+     * @param event L'événement JDA d'interaction de commande Slash.
+     */
+    public CommandContext(SlashCommandInteractionEvent event) {
+        this.slashEvent = event;
+        this.modalEvent =null;
+    }
+
+    /**
+     * Construit un contexte à partir d'un événement de soumission de formulaire (Modal).
+     *
+     * @param modalEvent L'événement JDA d'interaction avec un Modal.
+     */
+    public CommandContext(ModalInteractionEvent modalEvent) {
+        this.modalEvent = modalEvent;
         this.slashEvent = null;
     }
 
-    // Constructeur pour les slash commands
-    public CommandContext(SlashCommandCreateEvent event) {
-        this.slashEvent = event;
-        this.messageEvent = null;
+    /**
+     * Récupère l'événement de type commande Slash sous-jacent.
+     *
+     * @return L'objet {@link SlashCommandInteractionEvent}, ou {@code null} si le contexte n'est pas une commande Slash.
+     */
+    public IReplyCallback getEvent() {
+        if (this.slashEvent != null) return slashEvent;
+        if (this.modalEvent != null) return modalEvent;
+        return null;
     }
 
+    /**
+     * Détermine si le contexte actuel provient d'une commande Slash.
+     *
+     * @return {@code true} s'il s'agit d'une commande Slash, sinon {@code false}.
+     */
     public boolean isSlash() {
         return slashEvent != null;
     }
 
-    // --- Méthodes unifiées que tes commandes vont utiliser ---
-
-    public DiscordApi getApi() {
-        if (isSlash()) return slashEvent.getApi();
-        return messageEvent.getApi();
-    }
-
-    public Optional<TextChannel> getChannel() {
-        if (isSlash()) return slashEvent.getSlashCommandInteraction().getChannel();
-        return Optional.of(messageEvent.getChannel());
-    }
-
+    /**
+     * Récupère l'utilisateur Discord (User) à l'origine de l'interaction ou du message.
+     *
+     * @return L'objet {@link User} représentant l'auteur.
+     */
     public User getUser() {
-        if (isSlash()) return slashEvent.getSlashCommandInteraction().getUser();
-        return messageEvent.getMessageAuthor().asUser().orElseThrow();
+        return slashEvent.getUser();
     }
 
-    public String getAuthorName() {
-        if (isSlash()) return getUser().getName();
-        return messageEvent.getMessageAuthor().getDisplayName();
-    }
-
+    /**
+     * Récupère l'identifiant unique Discord (Snowflake ID) de l'auteur de la commande.
+     *
+     * @return L'ID de l'auteur sous forme de chaîne de caractères.
+     */
     public String getAuthorId() {
-        if (isSlash()) return getUser().getIdAsString();
-        return messageEvent.getMessageAuthor().getIdAsString();
+        return getUser().getId();
     }
 
-    // Répondre : ephemeral = visible uniquement par l'auteur (utile pour les erreurs)
-    public CompletableFuture<?> reply(EmbedBuilder embed) {
-        if (isSlash()) {
-            SlashCommandInteraction interaction = slashEvent.getSlashCommandInteraction();
-            return interaction.createImmediateResponder()
-                    .addEmbed(embed)
-                    .respond();
-        }
-        return getChannel()
-                .map(c -> c.sendMessage(embed))
-                .orElse(CompletableFuture.completedFuture(null));
+    /**
+     * Récupère le pseudonyme (nom d'utilisateur global ou effectif) de l'auteur de l'interaction.
+     *
+     * @return Le nom d'utilisateur sous forme de chaîne de caractères.
+     */
+    public String getAuthorName() {
+        return getUser().getName();
     }
 
+    /**
+     * Vérifie si l'utilisateur à l'origine de la commande est le propriétaire configuré du bot.
+     *
+     * @return {@code true} si l'auteur possède l'ID du propriétaire, sinon {@code false}.
+     */
+    public boolean isBotOwner() {
+        // Tu peux adapter l'ID ici ou le tirer de ta config
+        return getUser().getId().equals("TON_ID_PROPRIETAIRE");
+    }
+
+
+    /**
+     * Envoie une réponse textuelle à l'utilisateur.
+     * Gère automatiquement le type d'origine (commande Slash immédiate ou différée).
+     *
+     * @param message Le message textuel à envoyer.
+     * @return Un {@link CompletableFuture} représentant l'action d'envoi asynchrone.
+     */
     public CompletableFuture<?> reply(String message) {
-        if (isSlash()) {
-            SlashCommandInteraction interaction = slashEvent.getSlashCommandInteraction();
-            return interaction.createImmediateResponder()
-                    .setContent(message)
-                    .respond();
-        }
-        return getChannel()
-                .map(c -> c.sendMessage(message))
-                .orElse(CompletableFuture.completedFuture(null));
+        if (deferred) return slashEvent.getHook().sendMessage(message).submit();
+        return slashEvent.reply(message).submit();
     }
 
-    public CompletableFuture<?> replyEphemeral(EmbedBuilder embed) {
-        if (isSlash()) {
-            return slashEvent.getSlashCommandInteraction()
-                    .createImmediateResponder()
-                    .addEmbed(embed)
-                    .setFlags(MessageFlag.EPHEMERAL)
-                    .respond();
-        }
-        return reply(embed);
+    /**
+     * Envoie un message graphique structuré (Embed) à l'utilisateur.
+     * Gère automatiquement le type d'origine (commande Slash immédiate ou différée).
+     *
+     * @param embed Le constructeur d'embed {@link EmbedBuilder} contenant les données à envoyer.
+     * @return Un {@link CompletableFuture} représentant l'action d'envoi asynchrone.
+     */
+    public CompletableFuture<?> reply(EmbedBuilder embed) {
+        if (deferred) return slashEvent.getHook().sendMessageEmbeds(embed.build()).submit();
+        return slashEvent.replyEmbeds(embed.build()).submit();
     }
 
-    public Optional<User> getMentionedUser(String optionName) {
-        if (isSlash()) {
-            return slashEvent.getSlashCommandInteraction()
-                    .getOptions()       // niveau 1 : le subcommand (ex: "teamInvite")
-                    .stream()
-                    .findFirst()
-                    .flatMap(sub -> sub.getOptionByName(optionName)) // niveau 2 : l'option
-                    .flatMap(SlashCommandInteractionOption::getUserValue);
-        }
-        return messageEvent.getMessage()
-                .getMentionedUsers()
-                .stream()
-                .findFirst();
-    }
-    public Optional<String> getOptionString(String optionName) {
-        if (isSlash()) {
-            return slashEvent.getSlashCommandInteraction()
-                    .getOptions() // liste des subcommands
-                    .stream()
-                    .findFirst() // le subcommand actif (ex: "createTeam")
-                    .flatMap(sub -> sub.getOptionByName(optionName)) // ← descend dans le subcommand
-                    .flatMap(SlashCommandInteractionOption::getStringValue);
-        }
-        return Optional.empty();
-    }
-    public List<User> getMentionedUsers() {
-        if (isSlash()) {
-            return slashEvent.getSlashCommandInteraction()
-                    .getOptions()
-                    .stream()
-                    .findFirst()
-                    .map(sub -> sub.getOptions()
-                            .stream()
-                            .map(SlashCommandInteractionOption::getUserValue)
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(Collectors.toList()))
-                    .orElse(List.of());
-        }
-        return messageEvent.getMessage().getMentionedUsers();
-    }
-    public boolean isOwner() {
-        if (isSlash()) {
-            // Récupère l'application info pour comparer avec l'owner
-            return slashEvent.getApi()
-                    .getOwnerId()
-                    .map(ownerId -> ownerId == getUser().getId())
-                    .orElse(false);
-        }
-        return messageEvent.getMessageAuthor().isBotOwner();
-    }
-    private boolean deferred = false;
-
+    /**
+     * Diffère la réponse pour une commande Slash (Affiche "Le bot réfléchit...").
+     * Indispensable pour les traitements ou requêtes API qui durent plus de 3 secondes.
+     */
     public void defer() {
         if (isSlash()) {
-            slashEvent.getSlashCommandInteraction()
-                    .respondLater() // envoie l'acknowledge
-                    .join();
-            deferred = true;
+            slashEvent.deferReply().queue();
+            this.deferred = true;
         }
     }
 
-    public CompletableFuture<?> replyDeferred(EmbedBuilder embed) {
-        if (isSlash() && deferred) {
-            return slashEvent.getSlashCommandInteraction()
-                    .createFollowupMessageBuilder()
-                    .addEmbed(embed)
-                    .send();
-        }
-        return reply(embed); // fallback normal
-    }
-
-    public CompletableFuture<?> replyDeferred(String message) {
-        if (isSlash() && deferred) {
-            return slashEvent.getSlashCommandInteraction()
-                    .createFollowupMessageBuilder()
-                    .setContent(message)
-                    .send();
-        }
-        return reply(message);
-    }
-    public SlashCommandCreateEvent getSlashEvent() {
-        return slashEvent;
-    }
-    public Optional<String> getOptionStringDirect(String optionName) {
+    /**
+     * Récupère la valeur d'une option de commande Slash sous forme de chaîne de caractères (String),
+     * encapsulée dans un {@link Optional}.
+     *
+     * @param optionName Le nom de l'option à extraire.
+     * @return Un {@link Optional} contenant la valeur textuelle si elle est présente, ou {@link Optional#empty()}.
+     */
+    public Optional<String> getOptionString(String optionName) {
         if (isSlash()) {
-            return slashEvent.getSlashCommandInteraction()
-                    .getOptionByName(optionName)  // ← niveau racine, pas de subcommand
-                    .flatMap(SlashCommandInteractionOption::getStringValue);
+            return Optional.ofNullable(slashEvent.getOption(optionName))
+                    .map(OptionMapping::getAsString);
         }
         return Optional.empty();
+    }
+
+
+    /**
+     * Récupère directement la valeur textuelle d'une option (alias direct de {@code getOptionString}).
+     *
+     * @param optionName Le nom de l'option à extraire.
+     * @return Un {@link Optional} contenant la valeur textuelle si elle est présente.
+     */
+    public Optional<String> getOptionStringDirect(String optionName) {
+        return getOptionString(optionName);
+    }
+
+
+    /**
+     * Extrait l'ensemble des options fournies à la commande Slash sous forme d'une liste de chaînes de caractères.
+     *
+     * @return Une {@link List} contenant toutes les valeurs des options converties en chaînes, ou une liste vide.
+     */
+    public List<String> getOptionsAsStringList() {
+        if (isSlash()) {
+            return slashEvent.getOptions().stream()
+                    .map(OptionMapping::getAsString)
+                    .collect(Collectors.toList());
+        }
+        return List.of();
+    }
+
+
+    /**
+     * Récupère l'événement de commande Slash d'origine.
+     *
+     * @return L'objet {@link SlashCommandInteractionEvent}, ou {@code null} si le contexte provient d'un autre événement.
+     */
+    public SlashCommandInteractionEvent getSlashEvent() {
+        return slashEvent;
+    }
+
+
+    /**
+     * Récupère l'instance JDA (Java Discord API) active liée à cet événement.
+     *
+     * @return L'instance {@link JDA} du bot.
+     */
+    public JDA getJda() {
+        return slashEvent.getJDA();
+    }
+
+    /**
+     * Récupère le salon textuel d'Union dans lequel la commande ou l'interaction a été déclenchée.
+     * S'adapte dynamiquement selon que l'événement soit un Modal ou une commande Slash.
+     *
+     * @return L'instance {@link MessageChannelUnion} représentant le salon.
+     */
+    public MessageChannelUnion getChannel() {
+        if (this.modalEvent != null) { // Si c'est une Modal
+            return this.modalEvent.getChannel();
+        }else{
+            return this.slashEvent.getChannel();
+        }
+    }
+
+    /**
+     * Récupère le salon textuel sous forme d'un conteneur {@link Optional}.
+     *
+     * @return Un {@link Optional} contenant le {@link MessageChannel} s'il est disponible.
+     */
+    public java.util.Optional<MessageChannel> getChannelOptional() {
+        return java.util.Optional.ofNullable(getChannel());
+    }
+
+    /**
+     * Récupère l'identifiant unique (ID de flocon / Snowflake ID) du salon actuel.
+     *
+     * @return La chaîne de caractères représentant l'ID du salon.
+     */
+    public String getChannelId() {
+        return getChannel().getId();
+    }
+
+    /**
+     * Extrait la liste des utilisateurs mentionnés dans les arguments de l'événement.
+     * Gère les options de type "User" dans les commandes Slash.
+     *
+     * @return Une liste contenant les {@link User} mentionnés.
+     */
+    public List<User> getMentionedUsers() {
+        return slashEvent.getOptionsByType(net.dv8tion.jda.api.interactions.commands.OptionType.USER)
+                .stream()
+                .map(net.dv8tion.jda.api.interactions.commands.OptionMapping::getAsUser)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

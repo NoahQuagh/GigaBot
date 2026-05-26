@@ -3,7 +3,8 @@ package bot.discordBot.commands;
 import bot.discordBot.utils.commands.Command;
 import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.CommandExecutor;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
+
+import net.dv8tion.jda.api.EmbedBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -30,19 +31,19 @@ public class CommandEdtDev implements CommandExecutor {
 
         fetchTodayEvents().thenAccept(events -> {
             EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("📅 Emploi du temps du noaaaah_493 - Aujourd'hui")
-                    .addField("","")
+                    .setTitle("📅 Emploi du temps de noaaaah_493 - Aujourd'hui")
+                    .addField("","",false)
                     .setColor(Color.CYAN);
 
             if (events == null || events.isEmpty()) {
                 embed.setDescription("Aucun cours prévu pour aujourd'hui.");
             } else {
                 for (String line : events) {
-                    embed.addField(line,"");
+                    embed.addField(line,"",false);
                 }
             }
 
-            ctx.replyDeferred(embed);
+            ctx.getEvent().getHook().sendMessageEmbeds(embed.build()).queue();
         });
     }
 

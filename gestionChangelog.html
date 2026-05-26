@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>GigaBot - Gestion des Changelogs</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #2c2f33; color: white; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #23272a; padding: 20px; border-radius: 8px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #99aab5; }
+        input, textarea, select { width: 100%; padding: 10px; background: #2c2f33; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        button { background: #7289da; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #5b6eae; }
+        .output-zone { margin-top: 20px; background: #000; padding: 15px; border-radius: 4px; position: relative; }
+        pre { white-space: pre-wrap; word-wrap: break-word; font-size: 12px; color: #43b581; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #43b581; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📝 Gestionnaire de Changelog</h1>
+
+    <div class="form-group">
+        <label>Version (ex: 1.0.5)</label>
+        <input type="text" id="version" placeholder="1.0.5">
+    </div>
+
+    <hr>
+    <h3>Ajouter une Nouveauté</h3>
+    <div class="form-group">
+        <input type="text" id="new-name" placeholder="Nom de la nouveauté">
+        <textarea id="new-desc" rows="2" placeholder="Description..."></textarea>
+        <button onclick="addItem('nouveau')">+ Ajouter Nouveauté</button>
+    </div>
+
+    <h3>Ajouter un Bug</h3>
+    <div class="form-group">
+        <input type="text" id="bug-name" placeholder="Nom du bug">
+        <textarea id="bug-desc" rows="2" placeholder="Description..."></textarea>
+        <textarea id="bug-res" rows="2" placeholder="Résolution..."></textarea>
+        <button onclick="addItem('bug')" style="background: #f04747;">+ Ajouter Bug</button>
+    </div>
+
+    <hr>
+    <button onclick="generateJSON()" style="width: 100%; font-size: 18px; background: #43b581;">💾 GÉNÉRER LE JSON</button>
+    <button onclick="downloadJSON()" style="background: #3498db;">📥 Télécharger le fichier new.json</button>
+
+    <div class="output-zone">
+        <button class="copy-btn" onclick="copyToClipboard()">Copier</button>
+        <pre id="json-output">// Le JSON généré apparaîtra ici...</pre>
+    </div>
+</div>
+
+<script>
+    let currentData = { version: "", nouveau: [], bug: [] };
+
+    function addItem(type) {
+        if (type === 'nouveau') {
+            currentData.nouveau.push({
+                nomNouveaute: document.getElementById('new-name').value,
+                description: document.getElementById('new-desc').value
+            });
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-desc').value = '';
+        } else {
+            currentData.bug.push({
+                nomBug: document.getElementById('bug-name').value,
+                description: document.getElementById('bug-desc').value,
+                resolution: document.getElementById('bug-res').value
+            });
+            document.getElementById('bug-name').value = '';
+            document.getElementById('bug-desc').value = '';
+            document.getElementById('bug-res').value = '';
+        }
+    }
+
+    // Remplace la fonction generateJSON dans ton gestionChangelog.html par celle-ci
+    async function generateJSON() {
+        const version = document.getElementById('version').value;
+        if(!version) { alert("Indique une version !"); return; }
+
+        // 1. On demande à l'utilisateur de sélectionner son fichier new.json actuel
+        // (C'est la seule façon pour le navigateur d'accéder au contenu)
+        try {
+            const [fileHandle] = await window.showOpenFilePicker();
+            const file = await fileHandle.getFile();
+            const content = await file.text();
+            let fullData = JSON.parse(content);
+
+            // 2. On prépare la nouvelle version
+            const newRelease = {
+                version: version,
+                nouveau: currentData.nouveau,
+                bug: currentData.bug
+            };
+
+            // 3. On l'ajoute au début du tableau (Unshift)
+            fullData.unshift(newRelease);
+
+            // 4. On affiche le résultat final prêt à être sauvegardé
+            const finalJson = JSON.stringify(fullData, null, 2);
+            document.getElementById('json-output').innerText = finalJson;
+
+            alert("Fusion réussie ! Copie le résultat dans ton fichier.");
+        } catch (err) {
+            alert("Erreur lors de la lecture du fichier : " + err);
+        }
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('json-output').innerText;
+        navigator.clipboard.writeText(text);
+    }
+
+    async function saveJSON() {
+        const finalJson = document.getElementById('json-output').innerText;
+
+        // Ouvre une fenêtre d'enregistrement
+        const handle = await window.showSaveFilePicker({
+            suggestedName: 'new.json',
+            types: [{
+                description: 'JSON Files',
+                accept: {'application/json': ['.json']},
+            }],
+        });
+
+        const writable = await handle.createWritable();
+        await writable.write(finalJson);
+        await writable.close();
+    }
+
+    function downloadJSON() {
+        // On récupère le contenu qui est affiché dans la zone noire
+        const content = document.getElementById('json-output').innerText;
+
+        // On vérifie qu'il y a bien du contenu généré
+        if (content.startsWith('//') || content === "") {
+            alert("Génère d'abord le JSON en cliquant sur le bouton vert !");
+            return;
+        }
+
+        // Création d'un "Blob" (un objet fichier) contenant le texte
+        const blob = new Blob([content], { type: 'application/json' });
+
+        // Création d'un lien invisible pour forcer le téléchargement
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        a.href = url;
+        a.download = 'new.json'; // Nom du fichier qui sera téléchargé
+        document.body.appendChild(a);
+        a.click(); // On simule le clic
+
+        // Nettoyage
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>
+
+</body>
+</html>

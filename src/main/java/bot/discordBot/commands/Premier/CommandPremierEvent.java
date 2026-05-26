@@ -10,11 +10,15 @@ import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.datamanager.DataManager;
 import bot.discordBot.utils.commands.datamanager.DataStructure.Equipe;
 import bot.discordBot.utils.commands.datamanager.DataStructure.Rappel;
-import org.javacord.api.entity.message.component.Button;
-import org.javacord.api.entity.message.component.ButtonStyle;
-import org.javacord.api.entity.message.embed.Embed;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.user.User;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.text.TextInput;
+import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
+import net.dv8tion.jda.api.interactions.modals.Modal;
+
 
 import java.awt.*;
 import java.time.Duration;
@@ -23,12 +27,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.concurrent.*;
 
-import static bot.discordBot.Main.api;
+import static bot.discordBot.Main.jda;
 import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
 import static bot.discordBot.utils.commands.Code.AUCUNE_DONNEE_TROUVER;
 import static bot.discordBot.utils.commands.Code.SYNTAXE_INCORRECTE;
@@ -37,16 +39,20 @@ import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandPremierEvent extends CommandPremier {
 
-    public static java.util.Map<String, java.util.concurrent.ScheduledFuture<?>> tachesActives = new java.util.HashMap<>();
+    public static Map<String, java.util.concurrent.ScheduledFuture<?>> tachesActives = new java.util.concurrent.ConcurrentHashMap<>();
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
-    public int nbRefu = 0;
+    public int nbRefu = 0;//a revoir car pas unique par chaque team et event
 
     @SuppressWarnings("unchecked")
     @Override
     public void run(CommandContext ctx, Command command, String[] args) {
         netoyageRappel();
-        if (ctx.isSlash()) ctx.defer();
         try {
+            String type = ctx.isSlash()
+                    ? ctx.getOptionString("type").orElseThrow(() -> new SyntaxeException(ctx, "/premier event <>"))
+                    : (args.length >= 2 ? args[1] : null);
+
+            String channelId = ctx.getChannelId();
             String teamName = null;
 
             if (!CapitaineNaPasDEquipe(ctx.getAuthorId())) {
@@ -68,7 +74,51 @@ public class CommandPremierEvent extends CommandPremier {
                 throw new EquipeException(ctx, "Il n'y a pas assez de joueurs dans votre team (minimum 5).");
             }
 
-            execute(ctx, args[1] + ":" + args[2] + ":" + args[3], args[4] + ":" + args[5], teamName);
+            TextInput JourInput = TextInput.create("event_jour", "Jour", TextInputStyle.SHORT)
+                    .setPlaceholder("Numéro du jour")
+                    .setMinLength(2)
+                    .setMaxLength(2)
+                    .setRequired(true)
+                    .build();
+
+            TextInput MoisInput = TextInput.create("event_mois", "Mois", TextInputStyle.SHORT)
+                    .setPlaceholder("Numéro du mois (Vide = mois actuelle)")
+                    .setMinLength(2)
+                    .setMaxLength(2)
+                    .setRequired(false)
+                    .build();
+
+            TextInput AnneeInput = TextInput.create("event_annee", "Année", TextInputStyle.SHORT)
+                    .setPlaceholder("Année (Vide = année actuelle)")
+                    .setMinLength(4)
+                    .setMaxLength(4)
+                    .setRequired(false)
+                    .build();
+
+            TextInput heureInput = TextInput.create("event_heure", "Heure", TextInputStyle.SHORT)
+                    .setPlaceholder("Heure")
+                    .setMinLength(2)
+                    .setMaxLength(2)
+                    .setRequired(true)
+                    .build();
+
+            TextInput minuteInput = TextInput.create("event_minute", "Minute", TextInputStyle.SHORT)
+                    .setPlaceholder("Minute")
+                    .setMinLength(2)
+                    .setMaxLength(2)
+                    .setRequired(true)
+                    .build();
+
+
+            Modal modal = Modal.create("create_event_modal&"+teamName+"&"+channelId+"&"+type, "Création d'Évènement Premier")
+                    .addComponents(ActionRow.of(JourInput),ActionRow.of(MoisInput),ActionRow.of(AnneeInput),ActionRow.of(heureInput), ActionRow.of(minuteInput))
+                    .build();
+
+
+            if (ctx.getEvent() instanceof net.dv8tion.jda.api.interactions.callbacks.IModalCallback callback) {
+                callback.replyModal(modal).queue();
+            }
+
         }catch (SyntaxeException e){
             writeLogFile("logs.txt",ctx.getAuthorName()+" | Code : "+ SYNTAXE_INCORRECTE);
         }catch (DateException e){
@@ -82,99 +132,29 @@ public class CommandPremierEvent extends CommandPremier {
 
     }
 
-    private void sendInvitationAndListen(CommandContext ctx,User user, String date, String heure,LocalDateTime dateTimeEvent,String team,String salonid) {
+    private void sendInvitation(CommandContext ctx,User user, String date, String heure,LocalDateTime dateTimeEvent,String team,String salonid,String type) {
 
-        EmbedBuilder embed = new EmbedBuilder()
-                .setTitle("Invitation Premier")
-                .setDescription("Vous avez été invité à une game de Premier le **" + date.replace(":", "/") + "** à **" + heure + "**"+" dans la team **"+team+"**.")
-                .setColor(Color.CYAN);
-        new org.javacord.api.entity.message.MessageBuilder()
-                .setEmbed(embed)
-                .addComponents(
-                        org.javacord.api.entity.message.component.ActionRow.of(
-                                Button.create("event_yes"+ user.getId(), ButtonStyle.SUCCESS, "Participer"),
-                                Button.create("event_no"+ user.getId(), ButtonStyle.DANGER, "Refuser")
-                        )
-                )
-                .send(user).thenAccept(message -> {
-                    message.addButtonClickListener(clickEvent -> {
-                        if (!clickEvent.getButtonInteraction().getUser().equals(user)) return;
+        long timestamp = dateTimeEvent.atZone(ZoneId.of("Europe/Paris")).toEpochSecond();
 
-                        String customId = clickEvent.getButtonInteraction().getCustomId();
-                        var updater = message.createUpdater();
+        user.openPrivateChannel().queue(pc -> {
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle("Invitation Premier")
+                    .setDescription("Vous avez été invité à une game de Premier le **" + date.replace(":", "/") + "** à **" + heure + "**"+" dans la team **"+team+"**.")
+                    .addField("Mode de jeu :","**"+type.toUpperCase()+"**",true)
+                    .setColor(Color.CYAN);
 
-                        Equipe equipe = getEquipeByEquipeName(team);
-
-
-                        if (customId.startsWith("event_yes")) {
-                            if(nbRefu>=equipe.getJoueurIds().size()-4){
-                                updater.setContent("✅ Merci pour ta participation mais l'évènement est annulé dù à un manque de joueur.")
-                                        .removeAllEmbeds()
-                                        .removeAllComponents()
-                                        .applyChanges();
-                                return;
-                            }
-
-                            ArrayList<Rappel> rappels = DataManager.loadRappels();
-                            rappels.add(new Rappel(user.getIdAsString(), dateTimeEvent));
-                            DataManager.saveRappels(rappels);
-
-                            scheduleReminder(user, dateTimeEvent);
-
-                            updater.setContent("✅ Ta participation est enregistrée ! Tu receveras un rappel **30min** avant le debut de la partie.")
-                                    .removeAllEmbeds()
-                                    .removeAllComponents()
-                                    .applyChanges();
-
-                            writeLogFile("logs.txt", user.getName()+"accept the invitation at "+dateTimeEvent+" in "+team);
-
-                            String chefId = getEquipeByEquipeName(team).getChefId();
-
-                            api.getTextChannelById(salonid).ifPresentOrElse(channel -> {
-                                channel.sendMessage("✅ **" + user.getName() + "** a accepté l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**");
-                            }, () -> {
-                                writeLogFile("logs.txt", " problème rencontrer pour l'envoie dans le salon  "+salonid+" pour "+team);
-                            });
-
-                            user.getApi().getUserById(chefId).thenAccept(chef -> {
-                                chef.sendMessage("✅ **" + user.getName() + "** a accepté l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**");
-                            });
-
-                        } else {
-                            if(nbRefu>=equipe.getJoueurIds().size()-4){
-                                updater.setContent("❌ Invitation déclinée.")
-                                        .removeAllEmbeds()
-                                        .removeAllComponents()
-                                        .applyChanges();
-                                return;
-                            }
-
-                            updater.setContent("❌ Invitation déclinée.")
-                                    .removeAllEmbeds()
-                                    .removeAllComponents()
-                                    .applyChanges();
-                            String chefId = DataManager.loadEquipes().get(0).getChefId();
-
-                            api.getTextChannelById(salonid).ifPresentOrElse(channel -> {
-                                channel.sendMessage("❌ **" + user.getName() + "** a refusé l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**");
-                            }, () -> {
-                                writeLogFile("logs.txt", " problème rencontrer pour l'envoie dans le salon  "+salonid+" pour "+team);
-                            });
-
-                            user.getApi().getUserById(chefId).thenAccept(chef -> {
-                                chef.sendMessage("❌ **" + user.getName() + "** a refusé l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**");
-                            });
-                            nbRefu++;
-                            if(nbRefu==equipe.getJoueurIds().size()-4){
-                                new CommandPremierCancelEvent().execute(ctx,heure.replace("/",":"),date,team,DataManager.loadRappels(),equipe,1);
-                            }
-                            writeLogFile("logs.txt", user.getName()+"declined the invitation at "+dateTimeEvent+" in "+team);
-                        }
-                    }).removeAfter(1, TimeUnit.DAYS);
-                });
+            pc.sendMessageEmbeds(embed.build())
+                    .addActionRow(
+                            net.dv8tion.jda.api.interactions.components.buttons.Button.success("inviteEv_ac&"+date+"&"+heure+"&"+timestamp+"&"+team+"&"+salonid, "Accepter"),
+                            net.dv8tion.jda.api.interactions.components.buttons.Button.danger("inviteEv_ref&"+date+"&"+heure+"&"+timestamp+"&"+team+"&"+salonid, "Refuser")
+                    )
+                    .queue();
+        }, throwable -> {
+            writeLogFile("logs.txt", "Impossible d'envoyer un MP à " + user.getName());
+        });
     }
 
-    public static void scheduleReminder(User user,LocalDateTime eventTime) {
+    public static void scheduleReminder(User user, LocalDateTime eventTime) {
         LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Europe/Paris"));
 
         LocalDateTime reminderTime = eventTime.minusMinutes(30);
@@ -184,10 +164,10 @@ public class CommandPremierEvent extends CommandPremier {
         if (delay > 0) {
             java.util.concurrent.ScheduledFuture<?> task = scheduler.schedule(() -> {
                 sendReminderEmbed(user);
-                tachesActives.remove(user.getIdAsString() + ":" + eventTime);
+                tachesActives.remove(user.getId() + ":" + eventTime);
             }, delay, java.util.concurrent.TimeUnit.SECONDS);
 
-            tachesActives.put(user.getIdAsString() + ":" + eventTime, task);
+            tachesActives.put(user.getId() + ":" + eventTime, task);
 
         } else {
             sendReminderEmbed(user);
@@ -195,13 +175,13 @@ public class CommandPremierEvent extends CommandPremier {
     }
 
     private static void sendReminderEmbed(User user){
-        EmbedBuilder embed = new EmbedBuilder()
-                .setTitle("⏰ Rappel :")
-                .setDescription("Ton match Premier commence dans moins de **30 minutes** !")
-                .setColor(Color.CYAN);
-        new org.javacord.api.entity.message.MessageBuilder()
-                .setEmbed(embed)
-                .send(user);
+        user.openPrivateChannel().queue(channel -> {
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle("⏰ Rappel :")
+                    .setDescription("Ton match Premier commence dans moins de 30 minutes !")
+                    .setColor(Color.CYAN);
+            channel.sendMessageEmbeds(embed.build()).queue();
+        });
     }
 
     public static void netoyageRappel(){
@@ -221,7 +201,78 @@ public class CommandPremierEvent extends CommandPremier {
         }
     }
 
-    public void execute(CommandContext ctx,String date,String heure,String team) throws DateException,EquipeException{
+    public void validationInvitation(String date, String heure,LocalDateTime dateTimeEvent,String team,String salonid,boolean accepte, net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent event){
+        Equipe equipe = getEquipeByEquipeName(team);
+        if(accepte){
+            if(nbRefu>=equipe.getJoueurIds().size()-4){
+                event.editMessage("✅ Merci pour ta participation mais l'évènement est annulé dû à un manque de joueurs.")
+                        .setEmbeds(new ArrayList<>())
+                        .setComponents(new ArrayList<>())
+                        .queue();
+                return;
+            }
+            ArrayList<Rappel> rappels = DataManager.loadRappels();
+            rappels.add(new Rappel(event.getUser().getId(), dateTimeEvent));
+            DataManager.saveRappels(rappels);
+
+            scheduleReminder(event.getUser(), dateTimeEvent);
+
+            event.editMessage("✅ Ta participation est enregistrée ! Tu receveras un rappel **30min** avant le debut de la partie.")
+                    .setComponents(new ArrayList<>())
+                    .queue();
+
+            writeLogFile("logs.txt", event.getUser().getName()+"accept the invitation at "+dateTimeEvent+" in "+team);
+
+            String chefId =equipe.getChefId();
+
+            jda.retrieveUserById(chefId).queue(user -> {
+                user.openPrivateChannel().queue(channel -> {
+                    channel.sendMessage("✅ **" + event.getUser().getName() + "** a accepté l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**").queue();
+                }, throwable -> {
+                    writeLogFile("logs.txt","Impossible d'envoyer le MP : l'utilisateur a bloqué le bot.");
+                });
+            }, throwable -> {
+                writeLogFile("logs.txt","Utilisateur introuvable pour l'ID : " + event.getUser().getId());
+            });
+
+            GuildMessageChannel channel = jda.getChannelById(GuildMessageChannel.class, salonid);
+            channel.sendMessage("✅ **" + event.getUser().getName() + "** a accepté l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**").queue();
+        }else{
+            if(nbRefu>=equipe.getJoueurIds().size()-4){
+                event.editMessage("❌ Invitation déclinée.")
+                        .setEmbeds(new ArrayList<>())
+                        .setComponents(new ArrayList<>())
+                        .queue();
+                return;
+            }
+            String chefId =equipe.getChefId();
+
+            event.editMessage("❌ Invitation déclinée.")
+                    .setEmbeds(new ArrayList<>())
+                    .setComponents(new ArrayList<>())
+                    .queue();
+
+            jda.retrieveUserById(chefId).queue(user -> {
+                user.openPrivateChannel().queue(channel -> {
+                    channel.sendMessage("❌ **" + event.getUser().getName() + "** a refusé l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**").queue();
+                }, throwable -> {
+                    writeLogFile("logs.txt","Impossible d'envoyer le MP : l'utilisateur a bloqué le bot.");
+                });
+            }, throwable -> {
+                writeLogFile("logs.txt","Utilisateur introuvable pour l'ID : " + event.getUser().getId());
+            });
+
+            GuildMessageChannel channel = jda.getChannelById(GuildMessageChannel.class, salonid);
+            channel.sendMessage("❌ **" + event.getUser().getName() + "** a refusé l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**").queue();
+            nbRefu++;
+            if(nbRefu==equipe.getJoueurIds().size()-4){
+                new CommandPremierCancelEvent().execute(null,date.replace("/",":").trim(),heure.trim(),team,equipe,1,salonid);
+            }
+            writeLogFile("logs.txt", event.getUser().getName()+"declined the invitation at "+dateTimeEvent+" in "+team);
+        }
+    }
+
+    public void execute(CommandContext ctx,String date,String heure,String team,String salonId,String type) throws DateException,EquipeException{
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd:MM:yyyy HH:mm");
         LocalDateTime dateTimeEvent = LocalDateTime.parse(date + " " + heure, formatter);
 
@@ -235,10 +286,6 @@ public class CommandPremierEvent extends CommandPremier {
 
         ArrayList<Equipe> equipes = DataManager.loadEquipes();
 
-        String channelId = ctx.getChannel()
-                .map(channel -> channel.getIdAsString())
-                .orElse("");
-
 
         for (Equipe equipe : equipes) {
             if (equipe.getEquipeId().equalsIgnoreCase(team)) {
@@ -246,21 +293,15 @@ public class CommandPremierEvent extends CommandPremier {
 
                     if (currentId == null || currentId.trim().isEmpty()) continue;
 
-                    ctx.getApi().getUserById(currentId).thenAccept(user -> {
-                        sendInvitationAndListen(ctx,user, date, heure, dateTimeEvent, team,channelId);
+                    jda.retrieveUserById(currentId).queue(user -> {
+                        sendInvitation(ctx,user, date, heure, dateTimeEvent, team,salonId,type);
                         writeLogFile("logs.txt", currentId + " | invitatiion envoyé à "+currentId);
 
-                    }).exceptionally(e -> {
-                        writeLogFile("logs.txt", currentId + " | " + AUCUNE_DONNEE_TROUVER + " >> " + e);
+                    },throwable-> {
+                        writeLogFile("logs.txt", currentId + " | " + AUCUNE_DONNEE_TROUVER);
                         ExceptionDefault(ctx, "Impossible de crée un évènement pour la team Premier " + team);
-                        return null;
                     });
                 }
-                EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("Invitation envoyé :")
-                        .setDescription("Game du **" + date.replace(":","/") +" à "+heure+"** dans la team **" + team.toUpperCase() +"**")
-                        .setColor(Color.GREEN);
-                ctx.replyDeferred(embed);
                 return;
             }
         }

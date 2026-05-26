@@ -10,7 +10,7 @@ import bot.discordBot.utils.commands.Command;
 import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.datamanager.DataManager;
 import bot.discordBot.utils.commands.datamanager.DataStructure.CompteValoDiscord;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
+import net.dv8tion.jda.api.EmbedBuilder;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -29,7 +29,7 @@ import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 public class CommandValoRank extends CommandValo {
     @Override
     public void run(CommandContext ctx, Command command, String[] args) {
-        if (ctx.isSlash()) ctx.defer();
+        ctx.defer();
         try {
             String pseudoRaw = ctx.isSlash()
                     ? ctx.getOptionString("pseudotag").orElseThrow(() -> new SyntaxeException(ctx, "/valo rank <pseudo#tag>"))
@@ -74,7 +74,7 @@ public class CommandValoRank extends CommandValo {
 
             if (!iconUrl.isEmpty()) embed.setThumbnail(iconUrl);
 
-            ctx.replyDeferred(embed);
+            ctx.getEvent().getHook().sendMessageEmbeds(embed.build()).queue();
 
             if(!(pseudoValoExist(pseudoRaw))){
                 ArrayList<CompteValoDiscord> compte = DataManager.loadValoDis();

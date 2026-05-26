@@ -9,7 +9,7 @@ import bot.discordBot.utils.commands.datamanager.DataManager;
 import bot.discordBot.utils.commands.datamanager.DataStructure.Bug;
 import bot.discordBot.utils.commands.datamanager.DataStructure.Nouveaute;
 import bot.discordBot.utils.commands.datamanager.DataStructure.StrucNew;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
+import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -21,10 +21,11 @@ import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 public class CommandNew implements CommandExecutor {
     @Override
     public void run(CommandContext ctx, Command command, String[] args) {
+        if (ctx.isSlash()) ctx.defer();
         try{
             ArrayList<StrucNew> toutesLesNews = DataManager.loadNew();
             if(toutesLesNews.isEmpty()){
-                ctx.reply("📢 Aucune nouveauté enregistrée.");
+                ctx.getEvent().getHook().sendMessage("📢 Aucune nouveauté enregistrée.").queue();
                 return;
             }
 
@@ -60,22 +61,22 @@ public class CommandNew implements CommandExecutor {
         // 1. Les Nouveautés
         if(currentVersion.getNouveau() != null && !currentVersion.getNouveau().isEmpty()){
             for(Nouveaute n : currentVersion.getNouveau()){
-                embed.addField("**" + n.getNomNouveaute() + "**", "- " + n.getDescription());
+                embed.addField("**" + n.getNomNouveaute() + "**", "- " + n.getDescription(),false);
             }
         }
 
         // 2. Les Bugs
         if(currentVersion.getBug() != null && !currentVersion.getBug().isEmpty()){
-            embed.addField("\u200B", "\u200B");
-            embed.addField("🪲 **Bug et Fixes :**", "\u200B");
+            embed.addField("\u200B", "\u200B",false);
+            embed.addField("🪲 **Bug et Fixes :**", "\u200B",false);
             for(Bug b : currentVersion.getBug()){
                 embed.addField(b.getNomBug() + " : ",
                         " - " + b.getDescription() + "\n" +
-                                " __- Résolution :__ " + b.getResolution());
+                                " __- Résolution :__ " + b.getResolution(),false);
             }
         }
 
-        ctx.reply(embed);
+        ctx.getEvent().getHook().sendMessageEmbeds(embed.build()).queue();
     }
 
     @Override

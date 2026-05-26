@@ -6,7 +6,8 @@ import bot.discordBot.utils.Exception.JoueurException;
 import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.Command;
 import bot.discordBot.utils.commands.CommandContext;
-import org.javacord.api.entity.user.User;
+import net.dv8tion.jda.api.entities.User;
+
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class CommandPremierNewCapitaine extends CommandPremier {
         if (ctx.isSlash()) ctx.defer();
         try {
             List<User> joueursMentioned = ctx.getMentionedUsers();
-            String idJoueur = joueursMentioned.getFirst().getIdAsString();
+            String idJoueur = joueursMentioned.getFirst().getId();
             String idCapitaine = ctx.getAuthorId();
             String joueur = joueursMentioned.getFirst().getName();
 

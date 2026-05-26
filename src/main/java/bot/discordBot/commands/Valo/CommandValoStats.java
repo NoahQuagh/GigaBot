@@ -10,7 +10,7 @@ import bot.discordBot.utils.commands.Command;
 import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.datamanager.DataManager;
 import bot.discordBot.utils.commands.datamanager.DataStructure.CompteValoDiscord;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
+import net.dv8tion.jda.api.EmbedBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -101,18 +101,18 @@ public class CommandValoStats extends CommandValo {
 
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle("📈   Stats de : " + pseudo + "#" + tag)
-                    .addField("", "")
-                    .addField("⚔️   KDA Moyen", String.format("%.2f", kda))
-                    .addField("", "")
-                    .addField("🎯   Headshot %", String.format("%.1f%%", hsPercentage))
-                    .addField("", "")
-                    .addField("💀   Total Kills", String.valueOf(totalKills))
-                    .addField("", "")
-                    .addInlineField("🏆   Winrate", String.format("%.1f%%", winRate))
+                    .addField("", "",false)
+                    .addField("⚔️   KDA Moyen", String.format("%.2f", kda),false)
+                    .addField("", "",false)
+                    .addField("🎯   Headshot %", String.format("%.1f%%", hsPercentage),false)
+                    .addField("", "",false)
+                    .addField("💀   Total Kills", String.valueOf(totalKills),false)
+                    .addField("", "",false)
+                    .addField("🏆   Winrate", String.format("%.1f%%", winRate),true)
                     .setFooter("Basé sur les " + totalMatches + " derniers matchs")
                     .setColor(Color.GREEN);
 
-            ctx.replyDeferred(embed);
+            ctx.getEvent().getHook().sendMessageEmbeds(embed.build()).queue();
 
             if(!(pseudoValoExist(pseudoRaw))){
                 ArrayList<CompteValoDiscord> compte = DataManager.loadValoDis();

@@ -6,7 +6,7 @@ import bot.discordBot.utils.Exception.JoueurException;
 import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.Command;
 import bot.discordBot.utils.commands.CommandContext;
-import org.javacord.api.entity.user.User;
+
 
 import java.util.HashMap;
 import java.util.List;

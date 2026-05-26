@@ -7,6 +7,7 @@ import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.Command;
 import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.datamanager.DataManager;
+import bot.discordBot.utils.commands.datamanager.DataStructure.CompteValoDiscord;
 import bot.discordBot.utils.commands.datamanager.DataStructure.TrackedPlayer;
 import org.json.JSONObject;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 
 import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
 import static bot.discordBot.utils.Procedure.ApiProcedure.ApiRiotRequete;
+import static bot.discordBot.utils.Procedure.ValoDisProcedure.pseudoValoExist;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandValoTrack extends CommandValo {
@@ -38,12 +40,10 @@ public class CommandValoTrack extends CommandValo {
 
             if (response.statusCode() == 200) {
                 JSONObject json = new JSONObject(response.body());
-                int currentTier = json.getJSONObject("data").getJSONObject("current_data").getInt("currenttier");
+                int currentTier = json.getJSONObject("data").getJSONObject("highest_rank").getInt("tier");
 
 
-                String channelId = ctx.getChannel()
-                        .map(channel -> channel.getIdAsString())
-                        .orElse("");
+                String channelId = ctx.getChannelId();
 
                 TrackedPlayer newPlayer = new TrackedPlayer(pseudoRaw, channelId, currentTier);
 
@@ -52,7 +52,15 @@ public class CommandValoTrack extends CommandValo {
                 players.add(newPlayer);
                 DataManager.saveTrackedPlayer(players);
 
-                ctx.replyDeferred("✅ Le joueur **" + pseudo + "** est maintenant suivi dans ce salon !");
+                ctx.getEvent().getHook().sendMessage("✅ Le joueur **" + pseudo + "** est maintenant suivi dans ce salon !").queue();
+                if(!(pseudoValoExist(pseudoRaw))){
+                    ArrayList<CompteValoDiscord> compte = DataManager.loadValoDis();
+                    if(compte.isEmpty()){
+                        compte = new ArrayList<>();
+                    }
+                    compte.add(new CompteValoDiscord("","",pseudoRaw));
+                    DataManager.saveValoDis(compte);
+                }
             } else throw new ApiException(ctx, "Joueur introuvable : " + response.statusCode());
         }catch (ApiException e){
             writeLogFile("logs.txt", ctx.getAuthorName() + " | Code : " + Code.AUCUNE_DONNEE_TROUVER);

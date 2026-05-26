@@ -3,8 +3,8 @@ package bot.discordBot.commands;
 import bot.discordBot.commands.Help.CommandHelpAll;
 import bot.discordBot.utils.Exception.SyntaxeException;
 import bot.discordBot.utils.commands.*;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.event.message.MessageCreateEvent;
+import net.dv8tion.jda.api.EmbedBuilder;
+
 
 import java.awt.*;
 import java.util.HashMap;
@@ -48,16 +48,11 @@ public class CommandHelp implements CommandExecutor {
     }
 
     private void sendDefaultHelp(CommandContext ctx) {
-        MessageManager.getRegistry().getByAlias("man").ifPresentOrElse(cmd -> {
-            CommandExecutor man = cmd.getExecutor();
-
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("**AIDE** :")
-                    .addField("", "- Utiliser ```/man <commande>``` " + man.getDescription() + ".")
-                    .addField("", "* Utiliser ```/help all``` pour voir toute les commandes disponibles.")
-                    .setColor(Color.GREEN);
-            ctx.replyDeferred(embed);
-        }, () -> {
-        });
+        EmbedBuilder embed = new EmbedBuilder()
+                .setTitle("**AIDE** :")
+                .addField("", "- Utiliser ```/doc``` pour lire la documentation.",false)
+                .addField("", "* Utiliser ```/help all``` pour voir toute les commandes disponibles.",false)
+                .setColor(Color.GREEN);
+        ctx.getEvent().getHook().sendMessageEmbeds(embed.build()).queue();
     }
 }

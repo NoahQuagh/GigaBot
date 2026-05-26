@@ -9,7 +9,7 @@ import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.Command;
 import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.CommandExecutor;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
+
 
 import java.awt.*;
 import java.util.HashMap;
@@ -49,9 +49,9 @@ public class CommandValo implements CommandExecutor {
                     new CommandValoRank().run(ctx,command,args);
                 }else if(args[0].equalsIgnoreCase("-stats")){
                     new CommandValoStats().run(ctx,command,args);
-                }else if(args[0].equalsIgnoreCase("-setTracker")){
+                }else if(args[0].equalsIgnoreCase("-settracker")){
                     new CommandValoTrack().run(ctx,command,args);
-                }else if(args[0].equalsIgnoreCase("-delTracker")){
+                }else if(args[0].equalsIgnoreCase("-deltracker")){
                     new CommandValoDeleteTrack().run(ctx,command,args);
                 }
             }else throw new SyntaxeException(ctx,"/"+getName()+" <--here");

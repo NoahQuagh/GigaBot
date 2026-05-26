@@ -4,6 +4,7 @@ import bot.discordBot.Main;
 import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.CommandContext;
 
+import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -13,7 +14,21 @@ import java.time.Duration;
 
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
+/**
+ * Classe utilitaire gérant les procédures d'appel aux API externes (Riot/HenrikDev)
+ * ainsi que la traduction des données de jeu de Valorant (Rangs, Couleurs, etc.).
+ */
 public class ApiProcedure {
+    /**
+     * Exécute une requête HTTP GET asynchrone vers l'API Valorant spécifiée.
+     * Récupère automatiquement la clé d'API depuis la configuration TOML et l'ajoute dans les en-têtes.
+     * En cas d'échec (timeout, coupure réseau), l'erreur est interceptée et consignée dans le fichier de logs.
+     *
+     * @param ctx Le contexte de la commande Discord actuelle (utilisé pour identifier l'auteur dans les logs).
+     * @param url L'URL complète de l'endpoint d'API à interroger.
+     * @return L'objet {@link HttpResponse} contenant la réponse sous forme de chaîne de caractères,
+     * ou {@code null} si la requête a échoué.
+     */
     public static HttpResponse<String> ApiRiotRequete(CommandContext ctx,String url){
         try{
             HttpClient client = HttpClient.newBuilder()
@@ -34,6 +49,16 @@ public class ApiProcedure {
         }
         return null;
     }
+
+    /**
+     * Exécute une requête HTTP GET asynchrone vers l'API Valorant spécifiée.
+     * Récupère automatiquement la clé d'API depuis la configuration TOML et l'ajoute dans les en-têtes.
+     * En cas d'échec (timeout, coupure réseau), l'erreur est interceptée et consignée dans le fichier de logs.
+     *
+     * @param url L'URL complète de l'endpoint d'API à interroger.
+     * @return L'objet {@link HttpResponse} contenant la réponse sous forme de chaîne de caractères,
+     * ou {@code null} si la requête a échoué.
+     */
     public static HttpResponse<String> ApiRiotRequete(String url){
         try{
             HttpClient client = HttpClient.newBuilder()
@@ -55,6 +80,13 @@ public class ApiProcedure {
         return null;
     }
 
+    /**
+     * Convertit l'identifiant numérique d'un rang compétitif Valorant (Tier ID) en son équivalent textuel en anglais.
+     * Les valeurs correspondent aux ID officiels retournés par les APIs Valorant (0 pour Sans rang, jusqu'à 27 pour Radiant).
+     *
+     * @param nb L'identifiant numérique du rang (Tier ID).
+     * @return Le libellé du rang sous forme de chaîne de caractères (ex: "Diamond 3", "Radiant").
+     */
     public static String getRankTxtByInt(int nb){
         return switch (nb) {
             case 0 -> "Unranked";
@@ -85,5 +117,40 @@ public class ApiProcedure {
             case 27 -> "Radiant";
             default -> "Inconnu (" + nb + ")";
         };
+    }
+
+    /**
+     * Associe une couleur graphique (AWT {@link Color}) à une chaîne de caractères représentant un rang Valorant.
+     * Cette méthode permet d'harmoniser visuellement la couleur des bordures des Embeds Discord en fonction de la charte du jeu.
+     *
+     * @param rank Le nom textuel du rang (ex: "Gold 1", "Ascendant 3", etc.). supporte l'anglais et le français.
+     * @return L'objet {@link Color} correspondant au thème du rang, ou {@link Color#GRAY} si le rang est inconnu ou nul.
+     */
+    public static Color getColorRankByRankTxt(String rank){
+        if (rank == null) return Color.GRAY;
+
+        String lowerRank = rank.toLowerCase();
+
+        if (lowerRank.contains("iron") || lowerRank.contains("fer")) {
+            return new Color(82, 82, 82);
+        } else if (lowerRank.contains("bronze")) {
+            return new Color(141, 107, 72);
+        } else if (lowerRank.contains("silver") || lowerRank.contains("argent")) {
+            return new Color(180, 195, 197);
+        } else if (lowerRank.contains("gold") || lowerRank.contains("or")) {
+            return new Color(229, 203, 91);
+        } else if (lowerRank.contains("platinum") || lowerRank.contains("platine")) {
+            return new Color(46, 171, 185);
+        } else if (lowerRank.contains("diamond") || lowerRank.contains("diamant")) {
+            return new Color(185, 128, 237);
+        } else if (lowerRank.contains("ascendant")) {
+            return new Color(69, 145, 107);
+        } else if (lowerRank.contains("immortal") || lowerRank.contains("immortel")) {
+            return new Color(185, 49, 79);
+        } else if (lowerRank.contains("radiant")) {
+            return new Color(255, 244, 186);
+        }
+
+        return Color.WHITE;
     }
 }

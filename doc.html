@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GigaBot — Documentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap"
+        rel="stylesheet">
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=menu"/>
+<style>
+:root {
+    --bg: #f7f5f0;
+    --bg2: #ffffff;
+    --bg3: #eeeae2;
+    --ink: #1a1510;
+    --ink2: #4a3f30;
+    --ink3: #8a7a65;
+    --accent: #c8401a;
+    --accent2: #1a5fc8;
+    --accent3: #1a8c3a;
+    --rule: rgba(26, 21, 16, 0.12);
+    --rule2: rgba(26, 21, 16, 0.06);
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --discord: #5865F2;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: 80px 1fr;
+    grid-template-areas:
+            "header header"
+            "sidebar hero"
+            "sidebar content"
+            "footer footer";
+    min-height: 100vh;
+}
+
+body.sidebar-open {
+    grid-template-columns: 300px 1fr;
+}
+
+/* ─── SIDEBAR ─── */
+
+#sidebar {
+    width: 80px;
+    z-index: 100;
+    grid-area: sidebar;
+    position: sticky;
+    background: var(--bg2);
+    border-right: 1.5px solid var(--ink);
+    display: flex;
+    padding: 1rem 0 1rem 1.2rem;
+    flex-direction: column;
+    top: 71px;
+    height: calc(100vh - 71px);
+    gap: 2rem;
+    transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
+    justify-content: space-between;
+}
+
+#sidebar.open {
+    transform: translateX(0);
+    width: 300px;
+    overflow-x: hidden;
+}
+
+/* ─── HEADER ─── */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    background: var(--bg2);
+    border-bottom: 1.5px solid var(--ink);
+    grid-area: header;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    height: 70px;
+    gap: 1rem;
+}
+
+.doc-hero-title-header {
+    font-family: var(--font-head);
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.0;
+}
+
+.doc-hero-title-header em {
+    font-style: normal;
+    color: #f0a060;
+}
+
+#menu {
+    transition: all 0.3s ease;
+}
+
+#menu:hover {
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+.header-brand ul li {
+    gap: 30px;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    text-decoration: none;
+}
+
+.brand-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 3px 10px;
+    border-radius: 5px;
+    letter-spacing: 0.06em;
+    border: 1px solid var(--bg);
+}
+
+.brand-badge:hover {
+    background: var(--bg);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+}
+
+.brand-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--ink2);
+}
+
+.brand-title {
+    font-family: var(--font-head);
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+}
+
+.header-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4vh;
+    list-style: none;
+    overflow: hidden;
+}
+
+.header-nav a {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: var(--ink2);
+    padding: 6px 14px;
+    text-decoration: none;
+    transition: color 0.15s;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.header-nav a:hover {
+    color: #f0a060;
+}
+
+.header-nav li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.iconmenu {
+    width: 40px;
+    height: 40px;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, border-radius 0.3s ease;
+    border-radius: 0;
+}
+
+.iconmenu:hover {
+    background-color: rgba(43, 38, 38, 0.27);
+    border-radius: 50%; /* Devient un cercle parfait */
+    cursor: pointer;
+}
+
+.header-nav a.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 28px;
+}
+
+.back-link {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink2);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s;
+}
+
+.back-link:hover {
+    color: var(--accent);
+}
+
+/* ─── HERO DOC ─── */
+.doc-hero {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 4rem 2.5rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 2rem;
+    grid-area: hero;
+    z-index: 10;
+    height: 280px;
+}
+
+.doc-hero-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 2rem;
+}
+
+.doc-hero-kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0.75rem;
+}
+
+.doc-hero-title {
+    font-family: var(--font-head);
+    font-size: clamp(32px, 5vw, 60px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.0;
+}
+
+.doc-hero-title em {
+    font-style: normal;
+    color: #f0a060;
+}
+
+.doc-hero-sub {
+    margin-top: 1rem;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: var(--font-mono);
+    max-width: 480px;
+}
+
+.version-tag {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    color: rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    align-self: flex-start;
+}
+
+/* ─── LAYOUT ─── */
+#doc-content {
+    grid-area: content;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Force le contenu au début (en haut) */
+    align-items: stretch;
+    height: 100%; /* Important pour que le fond occupe tout l'espace */
+    min-height: 80vh; /* Optionnel : pour garder une zone de travail constante */
+}
+
+.doc-layout {
+    width: 100%;
+    margin: 0 auto;
+    padding: 3rem 3rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 3rem;
+    grid-area: content;
+    z-index: 10;
+}
+
+.doc-layout-presen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem
+}
+
+.doc-layout-presen {
+}
+
+.doc-layoutCommande {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 3rem;
+}
+
+/* ─── CONTENT ─── */
+.doc-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    transition: opacity 2s ease, transform 2s ease;
+    width: 100%;
+}
+
+/* ─── SECTION ─── */
+.doc-section {
+    border-bottom: 1.5px solid var(--ink);
+}
+
+.doc-section:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    display: grid;
+    align-items: center;
+    grid-template-columns: auto auto 1fr;
+    grid-template-rows: auto;
+    grid-template-areas: "num title recherche";
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.section-num {
+    grid-area: num;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.section-title {
+    grid-area: title;
+    font-family: var(--font-head);
+    font-size: clamp(20px, 3vw, 32px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+}
+
+/* ─── GETTING STARTED ─── */
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.step-card {
+    border: 1.5px solid var(--ink);
+    background: var(--bg2);
+    padding: 1.25rem 1.5rem;
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    transition: box-shadow 0.15s;
+}
+
+.step-card:hover {
+    box-shadow: 3px 3px 0 var(--ink);
+}
+
+.step-num {
+    font-family: var(--font-head);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--rule);
+    line-height: 1;
+}
+
+.step-title {
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.step-desc {
+    font-size: 13px;
+    color: var(--ink2);
+    line-height: 1.6;
+}
+
+.inline-code {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg3);
+    color: var(--accent2);
+    padding: 1px 6px;
+    border-radius: 2px;
+}
+
+/* ─── COMMANDES ─── */
+
+/* ─── RECHERCHE ─── */
+.cmd-search-wrap {
+    grid-area: recherche;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.cmd-search {
+    width: 40vw;
+    background: var(--bg2);
+    border: 1.5px solid var(--ink);
+    border-bottom-width: 2px;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 10px 14px 10px 38px;
+    outline: none;
+    border-radius: 0;
+    transition: border-color 0.15s;
+}
+
+.cmd-search:focus {
+    border-color: var(--accent);
+}
+
+.cmd-search::placeholder {
+    color: var(--ink3);
+}
+
+.cmd-search-icon {
+    position: absolute;
+    left: 12px;
+    font-size: 16px;
+    color: var(--ink3);
+    pointer-events: none;
+}
+
+.cmd-search-count {
+    position: absolute;
+    right: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink3);
+    pointer-events: none;
+}
+
+.cmd-group {
+    margin-bottom: 2.5rem;
+}
+
+.cmd-group-label {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink3);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 1rem;
+}
+
+.cmd-card {
+    border: 1.5px solid var(--ink);
+    background: var(--bg2);
+    margin-bottom: 12px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+}
+
+.cmd-card:hover {
+    border-color: var(--accent);
+    box-shadow: 3px 3px 0 var(--ink);
+}
+
+.cmd-header {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.cmd-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cmd-name {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent2);
+}
+
+.cmd-desc {
+    font-size: 13px;
+    color: var(--ink2);
+}
+
+.cmd-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+}
+
+.badge-admin {
+    background: rgba(200, 64, 26, 0.1);
+    color: var(--accent);
+    border: 1px solid rgba(200, 64, 26, 0.3);
+}
+
+.badge-slash {
+    background: rgba(88, 101, 242, 0.1);
+    color: var(--discord);
+    border: 1px solid rgba(88, 101, 242, 0.3);
+}
+
+.badge-capitaine {
+    background: rgba(255, 160, 0, 0.1);
+    color: #e6900a;
+    border: 1px solid rgba(255, 160, 0, 0.3);
+}
+
+.badge-adjoint {
+    background: rgba(0, 180, 120, 0.1);
+    color: #00a870;
+    border: 1px solid rgba(0, 180, 120, 0.3);
+}
+
+
+.cmd-toggle {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink3);
+    transition: transform 0.2s;
+}
+
+.cmd-card.open .cmd-toggle {
+    transform: rotate(180deg);
+}
+
+.cmd-body {
+    display: none;
+    border-top: 1px solid var(--rule);
+    padding: 1rem 1.25rem;
+    background: var(--bg3);
+}
+
+.cmd-card.open .cmd-body {
+    display: block;
+}
+
+.cmd-usage {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: #373232;
+    color: #5dd62c;
+    padding: 10px 14px;
+    margin-bottom: 1rem;
+    display: inline-block;
+    border-radius: 5px;
+}
+
+.cmd-args {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 1rem;
+}
+
+.cmd-args li {
+    font-size: 13px;
+    color: var(--ink2);
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.cmd-args li div {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.arg-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent2);
+    min-width: 100px;
+    flex-shrink: 0;
+}
+
+.arg-req {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 2px;
+}
+
+.req {
+    background: rgba(200, 64, 26, 0.12);
+    color: var(--accent);
+}
+
+.opt {
+    background: rgba(26, 21, 16, 0.07);
+    color: var(--ink3);
+}
+
+.cmd-example {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 0.5rem;
+}
+
+.cmd-example span {
+    color: var(--accent2);
+}
+
+.sidebar-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink2);
+    transition: color 0.15s;
+}
+
+.sidebar-group:hover {
+    color: var(--ink);
+}
+
+.sidebar-arrow {
+    font-size: 10px;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-submenu {
+    list-style: none;
+    padding-left: 8px;
+}
+
+/* ─── CHANGELOG ─── */
+
+.entry-bug .entry-icon {
+    color: var(--accent);
+}
+
+.entry-bug {
+    color: var(--ink);
+    opacity: 0.85;
+}
+
+.changelog {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+}
+
+.changelog-item {
+    border: 1.5px solid var(--ink);
+    background: var(--bg2);
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+    width: 80vw;
+}
+
+.changelog-item:hover {
+    box-shadow: 3px 3px 0 var(--ink);
+}
+
+.changelog-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+}
+
+.changelog-version {
+    font-family: var(--font-head);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.changelog-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.changelog-tag {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.tag-current {
+    background: rgba(26, 140, 58, 0.12);
+    color: var(--accent3);
+    border: 1px solid rgba(26, 140, 58, 0.3);
+}
+
+.tag-old {
+    background: var(--bg3);
+    color: var(--ink3);
+    border: 1px solid var(--rule);
+}
+
+.changelog-body {
+    border-top: 1px solid var(--rule);
+    padding: 1rem 1.25rem;
+}
+
+.changelog-entry {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--ink2);
+    padding: 4px 0;
+    line-height: 1.6;
+}
+
+.entry-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* ─── FOOTER ─── */
+footer {
+    background: var(--ink);
+    color: var(--bg2);
+    text-align: center;
+    padding: 1.25rem 2rem;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    grid-area: footer;
+    z-index: 10;
+}
+
+footer a {
+    color: var(--bg2);
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #f0a060;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 800px) {
+    .doc-layoutCommande {
+        grid-template-columns: 1fr;
+    }
+
+    .doc-sidebar {
+        position: static;
+    }
+
+    .doc-hero-inner {
+        grid-template-columns: 1fr;
+    }
+
+    .header-inner {
+        padding: 0 1rem;
+    }
+
+    .version-tag {
+        display: none;
+    }
+
+    body {
+        grid-template-columns: 1fr;
+    }
+
+    #sidebar {
+        position: fixed;
+        width: 300px;
+        display: none;
+        transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    #sidebar.open {
+        transform: translateX(0);
+        display: block;
+        width: 300px;
+    }
+
+    .section-header {
+        grid-template-columns: 50px auto;
+        grid-template-rows: auto auto;
+        grid-template-areas:
+                "num title"
+                "recherche recherche";
+    }
+
+    .cmd-search {
+        width: 100%;
+    }
+}
+</style>
+<body id="body">
+
+<aside id="sidebar">
+  <nav>
+    <ul class="header-nav">
+      <li>
+        <div class="iconmenu"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgLTk2MCA5NjAgOTYwIiB3aWR0aD0iMzAiIGZpbGw9IiMxYTE1MTAiPgogIDxwYXRoIGQ9Ik0yNDAtMjAwaDEyMHYtMjQwaDI0MHYyNDBoMTIwdi0zNjBMNDgwLTc0MCAyNDAtNTYwdjM2MFptLTgwIDgwdi00ODBsMzIwLTI0MCAzMjAgMjQwdjQ4MEg1MjB2LTI0MGgtODB2MjQwSDE2MFptMzIwLTM1MFoiPjwvcGF0aD4KPC9zdmc+Cg==" alt="house" onclick="demarage()"></div>
+        <a onclick="demarage()">\Présentation</a></li>
+      <li>
+        <div class="iconmenu"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgZmlsbD0iIzFhMTUxMCIgY2xhc3M9ImJpIGJpLWNvZGUtc2xhc2giIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZD0iTTEwLjQ3OCAxLjY0N2EuNS41IDAgMSAwLS45NTYtLjI5NGwtNCAxM2EuNS41IDAgMCAwIC45NTYuMjk0ek00Ljg1NCA0LjE0NmEuNS41IDAgMCAxIDAgLjcwOEwxLjcwNyA4bDMuMTQ3IDMuMTQ2YS41LjUgMCAwIDEtLjcwOC43MDhsLTMuNS0zLjVhLjUuNSAwIDAgMSAwLS43MDhsMy41LTMuNWEuNS41IDAgMCAxIC43MDggMG02LjI5MiAwYS41LjUgMCAwIDAgMCAuNzA4TDE0LjI5MyA4bC0zLjE0NyAzLjE0NmEuNS41IDAgMCAwIC43MDguNzA4bDMuNS0zLjVhLjUuNSAwIDAgMCAwLS43MDhsLTMuNS0zLjVhLjUuNSAwIDAgMC0uNzA4IDAiPjwvcGF0aD4KPC9zdmc+Cg==" alt="commande" onclick="commandeBot()"></div>
+        <a onclick="commandeBot()">\Commande</a></li>
+      <li>
+        <div class="iconmenu"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMzBweCIgdmlld0JveD0iMCAtOTYwIDk2MCA5NjAiIHdpZHRoPSIzMHB4IiBmaWxsPSIjMWExNTEwIj4KICA8cGF0aCBkPSJNNzU2LTEyMCA1MzctMzM5bDg0LTg0IDIxOSAyMTktODQgODRabS01NTIgMC04NC04NCAyNzYtMjc2LTY4LTY4LTI4IDI4LTUxLTUxdjgybC0yOCAyOC0xMjEtMTIxIDI4LTI4aDgybC01MC01MCAxNDItMTQycTIwLTIwIDQzLTI5dDQ3LTlxMjQgMCA0NyA5dDQzIDI5bC05MiA5MiA1MCA1MC0yOCAyOCA2OCA2OCA5MC05MHEtNC0xMS02LjUtMjN0LTIuNS0yNHEwLTU5IDQwLjUtOTkuNVQ3MDEtODQxcTE1IDAgMjguNSAzdDI3LjUgOWwtOTkgOTkgNzIgNzIgOTktOTlxNyAxNCA5LjUgMjcuNVQ4NDEtNzAxcTAgNTktNDAuNSA5OS41VDcwMS01NjFxLTEyIDAtMjQtMnQtMjMtN0wyMDQtMTIwWiI+PC9wYXRoPgo8L3N2Zz4K" alt="changelog" onclick="changelog()"></div>
+        <a onclick="changelog()">\Changelog</a></li>
+    </ul>
+  </nav>
+  </aside>
+
+<!-- HEADER-->
+<header>
+  <div class="header-inner">
+    <div class="header-brand">
+      <ul class="header-nav">
+        <li>
+          <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMzBweCIgdmlld0JveD0iMCAtOTYwIDk2MCA5NjAiIHdpZHRoPSIzMHB4IiBmaWxsPSIjMWExNTEwIj4KICA8cGF0aCBkPSJNMTIwLTI0MHYtNjYuNjdoNzIwVi0yNDBIMTIwWm0wLTIwNi42N3YtNjYuNjZoNzIwdjY2LjY2SDEyMFptMC0yMDYuNjZWLTcyMGg3MjB2NjYuNjdIMTIwWiI+PC9wYXRoPgo8L3N2Zz4K" alt="menu" id="menu" onclick="toggleMenu()">
+          <span class="doc-hero-title-header">Giga<em>Bot</em></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+
+<!-- HERO -->
+<div class="doc-hero">
+  <div class="doc-hero-inner">
+    <div>
+      <div class="doc-hero-kicker">// documentation technique</div>
+      <h1 class="doc-hero-title">Giga<em>Bot</em></h1>
+      <p class="doc-hero-sub">Bot Discord développé en Java avec Javacord.</p>
+    </div>
+    <div class="version-tag">v1.0.6 — STABLE</div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<main class="doc-layout" id="doc-content">
+</main>
+
+<footer>
+  <p>&lt; &copy; 2025 Portfolio de Noah Quaghebeur | Développeur Web. Tous droits réservés. |
+    <a href="#">Plan du site</a> | <a href="#">Mentions légales</a> | <a href="#">Politique de confidentialité</a> &gt;
+  </p>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════
+   DONNÉES — Toutes les commandes du bot
+═══════════════════════════════════════════ */
+const commande = [
+    {
+        categorie: '/premier — Mode Premier Valorant',
+        ancre: 'premier',
+        cmds: [
+            {
+                nom: '/premier event',
+                description: 'Créer un événement de game Premier et envoie les invitations automatiquement aux membres de l\'équipe.',
+                acces: [
+                    {
+                        type: 'CAPITAINE'
+                    },
+                    {
+                        type: 'ADJOINT'
+                    }],
+                admin: false,
+                syntaxe: '/premier event &lt;jj&gt; &lt;mm&gt; &lt;aaaa&gt; &lt;hh&gt; &lt;mm&gt;',
+                arguments: [
+                    {nomArg: 'jour', type: 'requis', precision: 'Jour du match (format jj)'},
+                    {nomArg: 'mois', type: 'requis', precision: 'Mois du match (format mm)'},
+                    {nomArg: 'année', type: 'requis', precision: 'Année du match (format aaaa)'},
+                    {nomArg: 'heure', type: 'requis', precision: 'Heure du match (format hh)'},
+                    {nomArg: 'minute', type: 'requis', precision: 'Minute du match (format mm)'},
+                ],
+                action: 'Envoie une invitation en message privé sur Discord à tous les membres de votre équipe, avec des boutons Participer / Refuser. Un rappel est automatiquement créé après validation de la participation. Ce rappel est envoyé 30 min avant le match.'
+            },
+            {
+                nom: '/premier créerTeam',
+                description: 'Créer sa team Premier et en devenir capitaine',
+                acces: [
+                    {
+                        type: 'PUBLIC'
+                    }],
+                admin: false,
+                syntaxe: '/premier créerTeam nom:&lt;nomEquipe&gt;',
+                arguments: [
+                    {nomArg: 'nom', type: 'requis', precision: 'Nom unique de l\'équipe Premier'},
+                ],
+                action: 'Vous devenez automatiquement capitaine. Un seul joueur peut être capitaine. Le nom d\'équipe doit être unique.'
+            },
+            {
+                nom: '/premier inviteJoueur',
+                description: 'Inviter jusqu\'à 6 joueurs dans sa team',
+                acces: [
+                    {
+                        type: 'CAPITAINE'
+                    }],
+                admin: false,
+                syntaxe: '/premier inviteJoueur joueur1:@user [joueur2..6]',
+                arguments: [
+                    {nomArg: 'joueur1', type: 'requis', precision: 'Premier joueur à inviter (mention)'},
+                    {
+                        nomArg: 'joueur2–6',
+                        type: 'optionnel',
+                        precision: 'Joueurs supplémentaires (jusqu\'à 6 au total)'
+                    },
+                ],
+                action: 'Chaque joueur reçoit une invitation en DM. Réservé au capitaine. Maximum 7 joueurs par équipe.'
+            },
+            {
+                nom: '/premier supTeam',
+                description: 'Dissoudre son équipe Premier',
+                acces: [
+                    {
+                        type: 'CAPITAINE'
+                    }],
+                admin: false,
+                syntaxe: '/premier supTeam',
+                arguments: [
+                    {nomArg: 'aucune option', type: 'sans option', precision: 'Commande sans paramètres'},
+                ],
+                action: 'Supprime définitivement l\'équipe. Le nom et les joueurs sont libérés. Réservé au capitaine.'
+            },
+            {
+                nom: '/premier supJoueur',
+                description: 'Exclure un joueur de l\'équipe',
+                acces: [
+                    {
+                        type: 'CAPITAINE'
+                    }],
+                admin: false,
+                syntaxe: '/premier supJoueur joueur:@user',
+                arguments: [
+                    {nomArg: 'joueur', type: 'requis', precision: 'Joueur à exclure (mention)'},
+                ],
+                action: 'Réservé au capitaine. Le joueur est retiré de l\'équipe immédiatement.'
+            },
+            {
+                nom: '/premier cancelEvent',
+                description: 'Annuler un événement de game planifié',
+                acces: [
+                    {
+                        type: 'CAPITAINE'
+                    },
+                    {
+                        type: 'ADJOINT'
+                    }],
+                admin: false,
+                syntaxe: '/premier cancelEvent jour:&lt;jj&gt; mois:&lt;mm&gt; année:&lt;aaaa&gt; heure:&lt;hh&gt; minute:&lt;mm&gt;',
+                arguments: [
+                    {nomArg: 'jour/mois/année', type: 'requis', precision: 'Date de l\'événement à annuler'},
+                    {nomArg: 'heure/minute', type: 'requis', precision: 'Heure de l\'événement à annuler'},
+                ],
+                action: 'Supprime le rappel planifié. Les joueurs ne recevront plus de notification.'
+            },
+            {
+              nom:'/premier nouveauCapitaine',
+              description:'Permet de nommé un membre de l\'équipe capitaine',
+              acces: [
+                {
+                  type: 'CAPITAINE'
+                }],
+              admin: false,
+              syntaxe: '/premier nouveauCapitaine joueur:@user',
+              arguments: [
+                {nomArg: 'joueur', type: 'requis', precision: 'Joueur à nommé (mention)'},
+              ],
+              action: 'Réservé au capitaine. Le joueur est nommé capitaine de l\'équipe immédiatement.'
+            }
+        ]
+    },
+    {
+        categorie: '/valorant — Commandes relatives au jeu Valorant',
+        ancre: 'valorant',
+        cmds: [
+            {
+                nom: '/valorant rank',
+                description: 'Obtenir le rang actuel d\'un joueur',
+                acces: [
+                    {
+                        type: 'PUBLIC'
+                    }],
+                admin: false,
+                syntaxe: '/valorant rank pseudotag:&lt;Pseudo#Tag&gt;',
+                arguments: [
+                    {
+                        nomArg: 'pseudotag',
+                        type: 'requis',
+                        precision: 'Pseudo et tag Valorant (ex: TenZ#NA1) — autocomplétion disponible'
+                    },
+                ],
+                action: 'Astuce : l\'autocomplétion propose les pseudos déjà recherchés. Tapez quelques lettres pour filtrer.'
+            },
+            {
+                nom: '/valorant stats',
+                description: 'Obtenir les statistiques détaillées d\'un joueur',
+                acces: [
+                    {
+                        type: 'PUBLIC'
+                    }],
+                admin: false,
+                syntaxe: '/valorant stats pseudotag:&lt;Pseudo#Tag&gt;',
+                arguments: [
+                    {
+                        nomArg: 'pseudotag',
+                        type: 'requis',
+                        precision: 'Pseudo et tag Valorant (ex: Shroud#NA1) — autocomplétion disponible'
+                    },
+                ],
+                action: 'Vide'
+            },
+            {
+              nom:'/valorant setTracker',
+              description:'Le bot suit la progression du joueur Valorant et annonce son rank up dans le salon où la commande a été exécutée.',
+              acces: [
+                {
+                  type: 'PUBLIC'
+                }],
+              admin: false,
+              syntaxe: '/valorant setTracker pseudotag:&lt;Pseudo#Tag&gt;',
+              arguments: [
+                {
+                  nomArg: 'pseudotag',
+                  type: 'requis',
+                  precision: 'Pseudo et tag Valorant (ex: Shroud#NA1) — autocomplétion disponible'
+                },
+              ],
+              action: 'Vide'
+            },
+            {
+              nom:'/valorant delTracker',
+              description:'Le bot arrête de suivre la progression du joueur Valorant dans le salon où la commande a été exécutée.',
+              acces: [
+                {
+                  type: 'PUBLIC'
+                }],
+              admin: false,
+              syntaxe: '/valorant delTracker pseudotag:&lt;Pseudo#Tag&gt;',
+              arguments: [
+                {
+                  nomArg: 'pseudotag',
+                  type: 'requis',
+                  precision: 'Pseudo et tag Valorant (ex: Shroud#NA1) — autocomplétion disponible'
+                },
+              ],
+              action: 'Vide'
+            }
+        ]
+    },
+    {
+        categorie: '// Utilitaires',
+        ancre: 'utilitaires',
+        cmds: [
+            {
+                nom: '/bot',
+                description: 'Affiche les informations sur le bot',
+                acces: [
+                    {
+                        type: 'PUBLIC'
+                    }],
+                admin: false,
+                syntaxe: '/bot',
+                arguments: [],
+                action: 'Version, uptime, développeur et informations techniques du bot.'
+            },
+            {
+                nom: '/help',
+                description: 'Liste des commandes disponibles',
+                acces: [
+                    {
+                        type: 'PUBLIC'
+                    }],
+                admin: false,
+                syntaxe: '/help [option:all]',
+                arguments: [
+                    {
+                        nomArg: 'option',
+                        type: 'optionnel',
+                        precision: '<code>all</code> pour lister toutes les commandes'
+                    },
+                ],
+                action: 'Vide'
+            },
+            {
+                nom: '/nouveauté',
+                description: 'Voir les nouveautés et mises à jour du bot',
+                acces: [
+                    {
+                        type: 'PUBLIC'
+                    }],
+                admin: false,
+                syntaxe: '/nouveauté [version:&lt;x.x.x&gt;]',
+                arguments: [
+                    {
+                        nomArg: 'version',
+                        type: 'optionnel',
+                        precision: 'Version spécifique (ex: 1.0.3). Sans argument : dernière version.'
+                    },
+                ],
+                action: 'Vide'
+            },
+            {
+              nom: '/edtdev',
+              description: 'Voir l\'emploi du temps du développeur',
+              acces: [
+                {
+                  type: 'PUBLIC'
+                }],
+              admin: false,
+              syntaxe: '/edtdev',
+              arguments: [],
+              action: 'Vide'
+            },
+            {
+              nom: '/documentation',
+              description: 'Voir la documentation du bot',
+              acces: [
+                {
+                  type: 'PUBLIC'
+                }],
+              admin: false,
+              syntaxe: '/documentation',
+              arguments: [],
+              action: 'Vide'
+            },
+            {
+              nom: '/report',
+              description: 'Signaler un bug ',
+              acces: [
+                {
+                  type: 'PUBLIC'
+                }],
+              admin: false,
+              syntaxe: '/report',
+              arguments: [],
+              action: 'Vide'
+            }
+
+        ]
+    },
+];
+
+/* ═══════════════════════════════════════════
+   DONNÉES — Présentation
+═══════════════════════════════════════════ */
+const presentation = [
+    {
+        titre: 'Présentation Générale',
+        content: 'Ce projet consiste en l\'élaboration d\'un bot Discord polyvalent conçu pour améliorer l\'expérience des utilisateurs au sein d\'une communauté compétitive et étudiante. Le bot automatise la gestion d\'événements sportifs (mode Premier de Valorant), assure le suivi des performances des joueurs et facilite l\'accès aux emplois du temps universitaires.',
+    },
+    {
+        titre: 'Architecture Technique',
+        content: 'Le bot est développé en Java en utilisant la bibliothèque Javacord pour l\'interaction avec l\'API Discord. Il repose sur une architecture asynchrone robuste utilisant des <span class="inline-code">CompletableFuture</span> pour garantir une fluidité d\'utilisation, même lors de requêtes API intensives.',
+    },
+    {
+        titre: 'Objectifs du Projet',
+        content: '<b>Automatisation</b> : Réduire la charge mentale des capitaines d\'équipe pour l\'organisation des matchs sur Discord.<br><b>Accessibilité</b> : Centraliser les informations utiles (sportives et scolaires) sur une plateforme unique (Discord).<br><b>Réactivité</b> : Offrir un système de notification instantané pour les événements importants.'
+    },
+    {
+        titre: 'Commencez avec GigaBot !',
+        content: 'Commencez par <span class="inline-code">/</span> puis Discord vous proposera la liste des commandes disponibles ou à lire la rubrique <em>Commande</em>.',
+    },
+];
+
+/* ═══════════════════════════════════════════
+   UTILITAIRES UI
+═══════════════════════════════════════════ */
+const badgeClass = {
+    'ADMIN': 'badge-admin',
+    'SLASH': 'badge-slash',
+    'PUBLIC': 'badge-slash',
+    'CAPITAINE': 'badge-capitaine',
+    'ADJOINT': 'badge-adjoint',
+};
+
+function toggleCmd(card) {
+    card.classList.toggle('open');
+}
+
+function toggleChangelog(header) {
+    const body = header.nextElementSibling;
+    body.style.display = body.style.display === 'none' ? 'block' : 'none';
+}
+
+/* ─────────────────────────────────────────
+   TRANSITION — même système que l'accueil
+───────────────────────────────────────── */
+function changeContent(elementId, newContent, duration = 300) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    element.style.transition = `opacity ${duration}ms ease, transform ${duration}ms ease`;
+    element.style.opacity = '0';
+    element.style.transform = 'translateY(12px)';
+
+    setTimeout(() => {
+        element.innerHTML = newContent;
+        void element.offsetHeight;
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
+        initScrollSpy();
+    }, duration);
+}
+
+/* ─────────────────────────────────────────
+   SCROLL SPY SIDEBAR
+───────────────────────────────────────── */
+function initScrollSpy() {
+    const sections = document.querySelectorAll('.doc-section');
+    const navLinks = document.querySelectorAll('.sidebar-nav a');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(s => {
+            if (window.scrollY >= s.offsetTop - 120) current = s.id;
+        });
+        navLinks.forEach(a => {
+            a.classList.remove('active');
+            if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+        });
+    });
+}
+
+/* ─────────────────────────────────────────
+   GÉNÉRATEURS HTML
+───────────────────────────────────────── */
+
+// Génère une cmd-card à partir d'un objet commande
+function genCmdCard(cmd) {
+
+    const accesHtml = cmd.admin
+        ? '<span class="cmd-badge badge-admin">ADMIN</span>'
+        : (cmd.acces ?? []).map(a => '<span class="cmd-badge ' + (badgeClass[a.type] ?? 'badge-slash') + '">' + a.type + '</span>').join('');
+
+    const badges = `
+    ${accesHtml}
+    <span class="cmd-toggle">▾</span>`;
+
+    const args = (cmd.arguments ?? []).length > 0
+        ? `<ul class="cmd-args">
+        ${(cmd.arguments ?? []).map(a => `
+            <li>
+                <div><span class="arg-name">${a.nomArg}</span>→ ${a.precision}</div>
+                <span class="arg-req ${a.type === 'requis' ? 'req' : 'opt'}">${a.type}</span>
+            </li>`).join('')}
+       </ul>`
+        : '';
+
+    const action = cmd.action
+        ? `<div class="cmd-example">→ ${cmd.action}</div>`
+        : '';
+
+    return `
+        <div class="cmd-card" id="${cmd.nom.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}" onclick="toggleCmd(this)">
+            <div class="cmd-header">
+                <div class="cmd-header-left">
+                    <span class="cmd-name">${cmd.nom}</span>
+                    <span class="cmd-desc">${cmd.description}</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">${badges}</div>
+            </div>
+            <div class="cmd-body">
+                <div class="cmd-usage">${cmd.syntaxe}</div>
+                ${args}
+                ${action}
+            </div>
+        </div>`;
+}
+
+// Génère un cmd-group complet (titre + toutes ses cmd-cards)
+function genCmdGroup(groupe) {
+    const cards = groupe.cmds.map(genCmdCard).join('');
+    return `
+        <div class="cmd-group">
+            <div class="cmd-group-label" id="${groupe.ancre}">${groupe.categorie}</div>
+            ${cards}
+        </div>`;
+}
+
+// Génère les liens de sidebar dynamiquement depuis commande[]
+function genSidebarLinks() {
+    return commande.map(g => `<li><a href="#${g.ancre}" class="sub">→ ${g.cmds[0].nom.split(' ')[0]}</a></li>`).join('');
+}
+
+/* ─────────────────────────────────────────
+   PAGES
+───────────────────────────────────────── */
+function demarage() {
+    const items = presentation.map((e, i) => `
+        <div class="step-card">
+            <div class="step-num">0${i + 1}</div>
+            <div>
+                <div class="step-title">${e.titre}</div>
+                <div class="step-desc">${e.content}</div>
+            </div>
+        </div>`).join('');
+
+    const content = `
+        <div class="doc-layout-presen">
+            <div class="doc-content">
+                <section class="doc-section" id="start">
+                    <div class="section-header">
+                        <span class="section-num">01 —</span>
+                        <h2 class="section-title">Présentation</h2>
+                    </div>
+                    <div class="steps">${items}</div>
+                </section>
+            </div>
+        </div>`;
+
+    changeContent('doc-content', content);
+}
+
+function commandeBot() {
+    const groupes = commande.map(genCmdGroup).join('');
+
+    const content = `
+        <div class="doc-layoutCommande">
+            <div class="doc-content">
+                <section class="doc-section" id="commands">
+                    <div class="section-header">
+                        <span class="section-num">02 —</span>
+                        <h2 class="section-title">Commandes</h2>
+                        <div class="cmd-search-wrap">
+                            <input 
+                                type="text" 
+                                id="cmd-search" 
+                                class="cmd-search" 
+                                placeholder="Rechercher une commande..."
+                                oninput="filterCommandes(this.value)"
+                                autocomplete="off"
+                            >
+                            <span class="cmd-search-icon">⌕</span>
+                            <span class="cmd-search-count" id="cmd-search-count"></span>
+                        </div>
+                    </div>
+                    <div id="cmd-results">${groupes}</div>
+                </section>
+            </div>
+        </div>`;
+
+    changeContent('doc-content', content);
+}
+
+function filterCommandes(query) {
+    const q = query.toLowerCase().trim();
+    const count = document.getElementById('cmd-search-count');
+    let total = 0;
+
+    document.querySelectorAll('.cmd-group').forEach(group => {
+        let groupVisible = false;
+
+        group.querySelectorAll('.cmd-card').forEach(card => {
+            const nom = card.querySelector('.cmd-name')?.textContent.toLowerCase() ?? '';
+            const desc = card.querySelector('.cmd-desc')?.textContent.toLowerCase() ?? '';
+            const match = q === '' || nom.includes(q) || desc.includes(q);
+
+            card.style.display = match ? '' : 'none';
+            if (match) {
+                groupVisible = true;
+                total++;
+            }
+        });
+
+        // Cacher le groupe entier si aucune de ses commandes ne correspond
+        group.style.display = groupVisible ? '' : 'none';
+    });
+
+    count.textContent = q ? `${total} résultat${total > 1 ? 's' : ''}` : '';
+}
+
+function toggleSidebarGroup(el) {
+    const submenu = el.nextElementSibling;
+    const arrow = el.querySelector('.sidebar-arrow');
+    const isOpen = submenu.style.display !== 'none';
+    submenu.style.display = isOpen ? 'none' : 'block';
+    arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+
+    if (!isOpen) {
+        setTimeout(() => {
+            el.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }, 50);
+    }
+}
+
+function scrollToCmd(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+
+
+const changelog_data = [ /* JSON_HERE */ ];
+
+// 2. Fonction pour charger le JSON
+async function loadChangelog() {
+  try {
+    // Plus besoin de fetch, on lance directement l'affichage
+    document.addEventListener('DOMContentLoaded', () => {
+      if (changelog_data.length > 0) {
+        changelog();
+      }
+      demarage();
+    });
+
+  } catch (error) {
+    console.error("Impossible de charger le changelog :", error);
+    // Optionnel : Afficher un message d'erreur sur la page
+    changeContent('doc-content', `<p style="color:red">Erreur de chargement de la doc : ${error.message}</p>`);
+  }
+}
+
+// 4. Lancer le chargement au démarrage de la page
+window.onload = loadChangelog;
+
+const entreeIcon = {
+  'nouveaute': {icon: '✦', class: 'entry-nouveaute'},
+  'bug': {icon: '⚑', class: 'entry-bug'},
+};
+
+function changelog() {
+  // On suppose que changelog_data est le tableau chargé depuis new.json
+  const items = changelog_data.map((v, i) => {
+
+    // 1. On traite les nouveautés
+    const nouveautesHTML = v.nouveau.map(n => {
+      const cfg = entreeIcon['nouveaute'];
+      return `<div class="changelog-entry ${cfg.class}">
+                        <span class="entry-icon">${cfg.icon}</span>
+                        <strong>${n.nomNouveaute}</strong> : ${n.description}
+                    </div>`;
+    }).join('');
+
+    // 2. On traite les bugs
+    const bugsHTML = v.bug.map(b => {
+      const cfg = entreeIcon['bug'];
+      return `<div class="changelog-entry ${cfg.class}">
+                        <span class="entry-icon">${cfg.icon}</span>
+                        <strong>BUG - ${b.nomBug}</strong> : ${b.description}
+                        <br><i style="font-size: 0.9em; margin-left: 25px;">Fix : ${b.resolution}</i>
+                    </div>`;
+    }).join('');
+
+    // 3. On détermine si c'est la version actuelle (la première de la liste)
+    const estActuelle = i === 0;
+
+    return `
+        <div class="changelog-item">
+            <div class="changelog-header" onclick="toggleChangelog(this)">
+                <div class="changelog-version">${v.version}</div>
+                <span class="changelog-tag ${estActuelle ? 'tag-current' : 'tag-old'}">
+                    ${estActuelle ? 'DERNIÈRE VERSION' : 'ARCHIVÉE'}
+                </span>
+            </div>
+            <div class="changelog-body" ${!estActuelle ? 'style="display:none"' : ''}>
+                ${nouveautesHTML}
+                ${bugsHTML}
+            </div>
+        </div>`;
+  }).join('');
+
+  const content = `
+        <div class="doc-layout-presen">
+            <div class="doc-content">
+                <section class="doc-section" id="changelog">
+                    <div class="section-header">
+                        <span class="section-num">03 —</span>
+                        <h2 class="section-title">Changelog</h2>
+                    </div>
+                    <div class="changelog">${items}</div>
+                </section>
+            </div>
+        </div>`;
+
+  changeContent('doc-content', content);
+}
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+    const main = document.getElementById('doc-content');
+    if (main) {
+        main.style.opacity = '1';
+        main.style.transform = 'translateY(0)';
+    }
+    demarage();
+});
+
+function activeDiv() {
+    document.querySelectorAll('*').forEach(el => {
+        el.style.border = '1px solid red';
+        el.style.boxSizing = 'border-box';
+    });
+}
+
+function toggleMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const body = document.querySelector('body');
+    body.classList.toggle('menu-open');
+    sidebar.classList.toggle('open');
+}
+</script>
+</body>
+</html>

@@ -24,10 +24,10 @@ public class CommandPremierAddTeam extends CommandPremier {
         if (ctx.isSlash()) ctx.defer();
         try {
             String nomTeam = ctx.isSlash()
-                    ? ctx.getOptionString("nom").orElseThrow(() -> new SyntaxeException(ctx, "/premier addteam <nomTeam>"))
+                    ? ctx.getOptionString("nom").orElseThrow(() -> new SyntaxeException(ctx, "/premier addteam <Compétitif/Entraînement>"))
                     : (args.length >= 2 ? args[1] : null);
 
-            if (nomTeam == null) throw new SyntaxeException(ctx, "/premier addteam <nomTeam>");
+            if (nomTeam == null) throw new SyntaxeException(ctx, "/premier addteam <Compétitif/Entraînement>");
 
             String idCapitaine = ctx.getAuthorId();
 

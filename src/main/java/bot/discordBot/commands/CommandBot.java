@@ -5,7 +5,7 @@ import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.Command;
 import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.CommandExecutor;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
+
 
 import java.awt.*;
 import java.util.HashMap;
@@ -45,7 +45,7 @@ public class CommandBot implements CommandExecutor {
     }
 
     private void messageBot(CommandContext ctx){
-        ctx.replyDeferred("```                       .,,uod8B8bou,,.\n" +
+        ctx.getEvent().getHook().sendMessage("```                       .,,uod8B8bou,,.\n" +
                 "              ..,uod8BBBBBBBBBBBBBBBBRPFT?l!i:.\n" +
                 "         ,=m8BBBBBBBBBBBBBBBRPFT?!||||||||||||||\n" +
                 "         !...:!TVBBBRPFT||||||||||!!^^\"\"'   ||||\n" +
@@ -74,6 +74,6 @@ public class CommandBot implements CommandExecutor {
                 "                `!!8888888888888888899fT|!^\"'\n" +
                 "                  `!988888888899fT|!^\"'\n" +
                 "                    `!9899fT|!^\"'\n" +
-                "                      `!^\"'\n```");
+                "                      `!^\"'\n```").queue();
     }
 }

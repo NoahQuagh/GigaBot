@@ -10,17 +10,15 @@ import bot.discordBot.utils.commands.Command;
 import bot.discordBot.utils.commands.CommandContext;
 import bot.discordBot.utils.commands.datamanager.DataManager;
 import bot.discordBot.utils.commands.datamanager.DataStructure.Equipe;
-import org.javacord.api.entity.message.component.Button;
-import org.javacord.api.entity.message.component.ButtonStyle;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.user.User;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.User;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static bot.discordBot.Main.api;
+import static bot.discordBot.Main.jda;
 import static bot.discordBot.utils.Exception.DefaultException.ExceptionDefault;
 import static bot.discordBot.utils.commands.Code.*;
 import static bot.discordBot.utils.commands.datamanager.DataStructure.Equipe.*;
@@ -52,120 +50,124 @@ public class CommandPremierTeamInvite extends CommandPremier {
             writeLogFile("logs.txt","Code : "+ Code.SYNTAXE_INCORRECTE+" : "+e);
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle("❌   Erreur :")
-                    .addField("Impossible d'ajouter le joueur'.","@nomJoueur doit être une mention du joueur souhaité")
+                    .addField("Impossible d'ajouter le joueur'.","@nomJoueur doit être une mention du joueur souhaité",false)
                     .setColor(Color.red);
-            ctx.replyDeferred(embed);
+            ctx.getEvent().getHook().sendMessageEmbeds(embed.build()).queue();
         }catch (Exception e){
             writeLogFile("logs.txt","Code : "+ Code.ECHEC+" : "+e);
             ExceptionDefault(ctx, "Impossible d'ajouter le(s) joueur(s)");
         }
     }
 
-    private void sendDemande(User user, String pseudo, String team,String idJoueur,CommandContext ctx){
-        System.out.println("deamnde");
-        EmbedBuilder embed = new EmbedBuilder()
-                .setTitle("Invitation dans la team Premier")
-                .setDescription("Vous avez été invité dans une team de Premier **"+team.toUpperCase()+"**")
-                .setColor(Color.CYAN);
-        new org.javacord.api.entity.message.MessageBuilder()
-                .setEmbed(embed)
-                .addComponents(
-                        org.javacord.api.entity.message.component.ActionRow.of(
-                                org.javacord.api.entity.message.component.Button.create("event_yes"+ user.getId(), ButtonStyle.SUCCESS, "Accepter"),
-                                Button.create("event_no"+ user.getId(), ButtonStyle.DANGER, "Refuser")
-                        )
-                )
-                .send(user).thenAccept(message -> {
-                    message.addButtonClickListener(clickEvent -> {
-                        if (!clickEvent.getButtonInteraction().getUser().equals(user)) return;
+    private void sendDemande(User user, String pseudo, String team, String idJoueur, CommandContext ctx) {
+        user.openPrivateChannel().queue(pc -> {
+            EmbedBuilder eb = new EmbedBuilder()
+                    .setTitle("📩 Invitation d'équipe Premier")
+                    .setDescription("Le capitaine de l'équipe **" + team + "** vous invite à rejoindre ses rangs !")
+                    .setColor(Color.CYAN);
 
-                        String customId = clickEvent.getButtonInteraction().getCustomId();
-                        var updater = message.createUpdater();
-
-                        if (customId.startsWith("event_yes")) {
-                            writeLogFile("logs.txt",pseudo+" | accepted the invitation to join the team Premier");
-                            updater.setContent("✅ Invitation accepté est enregistrée ! Bienvenu dans la team Premier **"+team.toUpperCase()+"**")
-                                    .removeAllEmbeds()
-                                    .removeAllComponents()
-                                    .applyChanges();
-
-
-                            validerInvitation(team,idJoueur,pseudo,ctx);
-                        } else {
-                            writeLogFile("logs.txt",pseudo+" | refused the invitation to join the team Premier");
-                            updater.setContent("❌ Invitation refusé dans la team Premier **"+team.toUpperCase()+"**")
-                                    .removeAllEmbeds()
-                                    .removeAllComponents()
-                                    .applyChanges();
-
-                            api.getUserById(ctx.getAuthorId()).thenAccept(chef -> {
-                                chef.sendMessage("❌ **"+pseudo+"** à refusé l'invitation dans votre team **"+team.toUpperCase()+"**");
-                            }).exceptionally(e -> {
-
-                                writeLogFile("logs.txt","Code : "+ Code.AUCUNE_DONNEE_TROUVER+" : "+e);
-                                ExceptionDefault(ctx,"Impossible d'envoyé une réponse au chef de la team");
-                                return null;
-                            });
-                        }
-                    }).removeAfter(1, TimeUnit.DAYS);
-                }).exceptionally(e -> {
-                    writeLogFile("logs.txt","Code : "+ ECHEC+" : "+e);
-                    ExceptionDefault(ctx, "Impossible d'ajouter le(s) joueur(s)");
-                    return null;
-                });
-    }
-
-    private void validerInvitation(String team,String idJoueur,String pseudo,CommandContext ctx){
-        System.out.println("invite");
-        api.getUserById(ctx.getAuthorId()).thenAccept(chef -> {
-            chef.sendMessage("✅ **"+pseudo+"** à accepté l'invitation dans votre team **"+team.toUpperCase()+"**");
-        }).exceptionally(e -> {
-
-            writeLogFile("logs.txt","Code : "+ Code.AUCUNE_DONNEE_TROUVER+" : "+e);
-            ExceptionDefault(ctx,"Impossible d'envoyé une réponse au chef de la team");
-            return null;
+            pc.sendMessageEmbeds(eb.build())
+                    .addActionRow(
+                            net.dv8tion.jda.api.interactions.components.buttons.Button.success("invite_accept&" + team, "Accepter"),
+                            net.dv8tion.jda.api.interactions.components.buttons.Button.danger("invite_refuse&" + team, "Refuser")
+                    )
+                    .queue();
+        }, throwable -> {
+            writeLogFile("logs.txt", "Impossible d'envoyer un MP à " + pseudo);
         });
-        try{
-            ArrayList<Equipe> curseur = DataManager.loadEquipes();
+    }
 
-            for (Equipe equipe : curseur) {
-                if (equipe.getEquipeId().equalsIgnoreCase(team)) {
-                    equipe.getJoueurIds().add(idJoueur);
+    public void validerInvitation(User user, String team, boolean accepte, net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent event, CommandContext ctx) {
+        String pseudo = user.getName();
+        String idJoueur = user.getId();
+
+        if (accepte) {
+            try {
+                ArrayList<Equipe> curseur = DataManager.loadEquipes();
+                boolean equipeTrouvee = false;
+
+                for (Equipe equipe : curseur) {
+                    // Vérifie si l'ID ou le nom correspond à 'team'
+                    if (equipe.getEquipeId().equalsIgnoreCase(team)) {
+                        if (!equipe.getJoueurIds().contains(idJoueur)) {
+                            equipe.getJoueurIds().add(idJoueur);
+                            equipeTrouvee = true;
+                        }
+                        break;
+                    }
                 }
+
+                if (equipeTrouvee) {
+                    DataManager.saveEquipes(curseur);
+                    writeLogFile("logs.txt", pseudo + " est inscrit dans l'équipe : " + team);
+
+                    event.editMessage("✅ Vous avez accepté l'invitation. Bienvenue dans l'équipe **" + team + "** !")
+                            .setComponents(new ArrayList<>())
+                            .queue();
+
+                    // Notification au capitaine
+                    String capitaineId = getEquipeByEquipeName(team).getChefId();
+
+                    jda.retrieveUserById(capitaineId).queue(userCap -> {
+                        user.openPrivateChannel().queue(channel -> {
+                            channel.sendMessage("🔔 **" + pseudo + "** a accepté l'invitation et rejoint l'équipe **" + team + "** !").queue();
+                        }, throwable -> {
+                            writeLogFile("logs.txt","Impossible d'envoyer le MP : l'utilisateur a bloqué le bot.");
+                        });
+                    }, throwable -> {
+                        writeLogFile("logs.txt","Utilisateur introuvable pour l'ID : " + capitaineId);
+                    });
+                }
+
+            } catch (Exception e) {
+                writeLogFile("logs.txt", "Erreur ajout équipe : " + e.getMessage());
             }
+        } else {
+            // Logique de refus : on modifie le message pour confirmer le refus et on retire les boutons
+            event.editMessage("❌ Vous avez refusé l'invitation.")
+                    .setComponents(new ArrayList<>())
+                    .queue();
 
-            writeLogFile("logs.txt",pseudo+" is registered in the team : "+team);
-            DataManager.saveEquipes(curseur);
+            // Notification au capitaine
+            String capitaineId = getEquipeByEquipeName(team).getChefId();
 
-        }catch (Exception e){
-            writeLogFile("logs.txt","Code : "+ Code.ECHEC+" : "+e);
-            ExceptionDefault(ctx, "Impossible d'ajouter le(s) joueur(s)");
+            jda.retrieveUserById(capitaineId).queue(userCap -> {
+                user.openPrivateChannel().queue(channel -> {
+                    channel.sendMessage("🔔 rejet : **" + pseudo + "** a refusé de rejoindre l'équipe **" + team + "**.").queue();
+                }, throwable -> {
+                    writeLogFile("logs.txt","Impossible d'envoyer le MP : l'utilisateur a bloqué le bot.");
+                });
+            }, throwable -> {
+                writeLogFile("logs.txt","Utilisateur introuvable pour l'ID : " + capitaineId);
+            });
+
+            writeLogFile("logs.txt", pseudo + " a refusé l'invitation pour " + team);
         }
     }
 
-    public void execute(CommandContext ctx,List<User> joueurs,String team){
+    public void execute(CommandContext ctx, List<User> joueurs, String team) {
         StringBuilder confirmation = new StringBuilder();
         for (User user : joueurs) {
-            String idJoueur = user.getIdAsString();
+            // Correction JDA : getId() au lieu de getIdAsString()
+            String idJoueur = user.getId();
 
             if (joueurDejaDansUneEquipe(idJoueur)) {
-                confirmation.append("⚠️ **").append(user.getName()).append("** fait déjà partie d'une team.\n");
+                confirmation.append("⚠️ **").append(user.getName()).append("** fait déjà partie d'une équipe.\n");
                 continue;
             }
 
             String pseudo = user.getName();
-            if(!(ctx.getAuthorId().equals(idJoueur))){
+            if (!(ctx.getAuthorId().equals(idJoueur))) {
                 confirmation.append("✅ Invitation envoyée à **").append(pseudo).append("**\n");
-                writeLogFile("logs.txt", pseudo + " | Invitation sent to join team " + team);
+                writeLogFile("logs.txt", pseudo + " | Invitation envoyée pour rejoindre l'équipe " + team);
                 sendDemande(user, pseudo, team, idJoueur, ctx);
             }
         }
 
         if (confirmation.length() == 0) {
-            confirmation.append("❌ Aucun joueur valide n'a été mentionné.");
+            confirmation.append("❌ Aucun joueur valide n'a été trouvé.");
         }
-
-        ctx.replyDeferred(confirmation.toString());
+        ctx.getEvent().getHook().sendMessage(confirmation.toString()).queue();
     }
 
 }

@@ -1,61 +1,47 @@
 [
   {
-    "version": "1.0.3",
+    "version": "1.0.6",
+    "nouveau": [],
+    "bug": [
+      {
+        "nomBug": "Système de détection du Peak Rank",
+        "description": "Le bot envoyait une notification de \"Nouveau record atteint\" dès qu'un joueur remontait d'un palier, même s'il avait déjà atteint un rang supérieur par le passé.",
+        "resolution": "Modification de la logique de comparaison : passage d'une lecture de current_data.currenttier à une vérification stricte basée sur highest_rank.tier."
+      }
+    ]
+  },
+  {
+    "version": "1.0.5",
     "nouveau": [
       {
-        "nomNouveaute": "Transition vers les \u0027Slash Commands\u0027 :",
-        "description": "L\u0027architecture du bot a été intégralement migrée des commandes textuelles classiques vers les Slash Commands natives de Discord. L\u0027utilisateur bénéficie désormais d\u0027une interface visuelle dès qu\u0027il tape `/`. Toutes les commandes disponibles sont listées avec leur description."
+        "nomNouveaute": "Nouvelle commande : `/edtdev`",
+        "description": "Permet de voir l'emploi du temps du développeur"
       },
       {
-        "nomNouveaute": "Système d\u0027Autocomplétion Dynamique :",
-        "description": "Pour optimiser l\u0027utilisation des commandes `/valorant rank` et `/valorant stats`, un système d\u0027autocomplétion intelligente a été mis en place. Lorsque l\u0027utilisateur commence à taper un pseudo Valorant, le bot interroge en temps réel la base de données pour lui suggérer les comptes correspondants.De plus Le bot \u0027apprend\u0027 les nouveaux pseudos rentrés par l\u0027utilisateur pour les reproposés plus tard."
+        "nomNouveaute": "Nouvelle commande : `/documentation`",
+        "description": "Permet de télécharger la documentation du bot"
       },
       {
-        "nomNouveaute": "Nouvelle commande : `/premier créerTeam`",
-        "description": "Via une commande dédiée, l\u0027utilisateur définit le nom de son équipe dont il est automatiquement le capitaine. Par la suite, il pourra inviter des membres dans son équipe."
+        "nomNouveaute": "Nouvelle command : `/report`",
+        "description": "Permet de faire remonter un bug auprès du développeur"
       },
       {
-        "nomNouveaute": "Nouvelle command : `/premier inviteJoueur`",
-        "description": "Permet a un capitaine d\u0027équipe d\u0027envoyer des invitations par messagerie privée (DM) au joueur souhaité, ce dernier pouvant accepter ou refuser."
+        "nomNouveaute": "Nouvelle commande : `/nouveauCapitaine`",
+        "description": "Permet de définir un nouveau capitaine d'une équipe Premier"
       },
       {
-        "nomNouveaute": "Nouvelle command : `/premier supteam`",
-        "description": "Permet la gestion du cycle de vie des équipes. Elle offre aux capitaines la possibilité de dissoudre leur équipe, libérant ainsi le nom de l\u0027équipe et ses joueurs."
+        "nomNouveaute": "Modification du squelette du bot :",
+        "description": "L'API Discord utilisée par le bot (Javacord) a été remplacée par JDA (Java Discord API), une bibliothèque plus moderne et performante."
       }
     ],
     "bug": []
-  },
-  {
-    "version": "1.0.2",
-    "nouveau": [
-      {
-        "nomNouveaute": "Nouvelle commande : `/nouveauté`",
-        "description": "Cette commande permet de dÃ©couvrir les dernière¨res nouveautées du GigaBot."
-      },
-      {
-        "nomNouveaute": "Améliorations architecturales du système de sauvegarde du bot :",
-        "description": "Le systéme de stockage est passé d\u0027un format texte brut (.txt) à une structure JSON via la bibliothèque Google Gson. Ce changement abandonne la gestion par lignes concaténées au profit d\u0027une sérialisation d\u0027objets Java.De plus cette structure assure une prévention de la corruption de donnée et une auto-réparation en cas d\u0027erreur"
-      }
-    ],
-    "bug": [
-      {
-        "nomBug": "Conflit de Fuseau Horaire",
-        "description": "Décalage de 2 heures entre l\u0027heure de programmation du rappel d\u0027une game premier et l\u0027exécution réelle du rappel.La cause est que le serveur Oracle Cloud était configuré par défaut sur le fuseau UTC (Londres), tandis que l\u0027utilisateur est en UTC+2 (Paris/Heure d\u0027été).",
-        "resolution": "Synchronisation du serveur en UTC+2 (Paris/Heure d\u0027été)"
-      },
-      {
-        "nomBug": "Corruption et Explosion des fichiers de sauvegarde",
-        "description": "Apparition de milliers de lignes identiques ou de caractères de contrôle parasites (type ^M) dans le fichier de rappel, entraînant un ralentissement critique du bot. Les causes viennent d\u0027abord d\u0027une boucle d\u0027écriture infinie : Présence de processus fantômes écrivant simultanément dans le même fichier.La seconde Cause viens d\u0027un I/O Inefficient : Appel de la méthode de sauvegarde à l\u0027intérieur d\u0027une boucle, provoquant des accés disque trop fréquents et des corruptions de flux.",
-        "resolution": "La sauvegarde est désormais effectuée une seule fois aprés la complétion de la boucle de traitement en mémoire."
-      }
-    ]
   },
   {
     "version": "1.0.4",
     "nouveau": [
       {
         "nomNouveaute": "Nouvelle commande : `/premier cancelEvent`",
-        "description": "La commande identifie l\u0027équipe du capitaine et supprime le rappel prévu à la date indiquée."
+        "description": "La commande identifie l'équipe du capitaine et supprime le rappel prévu à la date indiquée."
       },
       {
         "nomNouveaute": "Nouvelle command : `/premier supJoueur`",
@@ -71,5 +57,56 @@
       }
     ],
     "bug": []
+  },
+  {
+    "version": "1.0.3",
+    "nouveau": [
+      {
+        "nomNouveaute": "Transition vers les 'Slash Commands' :",
+        "description": "L'architecture du bot a été intégralement migrée des commandes textuelles classiques vers les Slash Commands natives de Discord. L'utilisateur bénéficie désormais d'une interface visuelle dès qu'il tape `/`. Toutes les commandes disponibles sont listées avec leur description."
+      },
+      {
+        "nomNouveaute": "Système d'Autocomplétion Dynamique :",
+        "description": "Pour optimiser l'utilisation des commandes `/valorant rank` et `/valorant stats`, un système d'autocomplétion intelligente a été mis en place. Lorsque l'utilisateur commence à taper un pseudo Valorant, le bot interroge en temps réel la base de données pour lui suggérer les comptes correspondants.De plus Le bot 'apprend' les nouveaux pseudos rentrés par l'utilisateur pour les reproposés plus tard."
+      },
+      {
+        "nomNouveaute": "Nouvelle commande : `/premier créerTeam`",
+        "description": "Via une commande dédiée, l'utilisateur définit le nom de son équipe dont il est automatiquement le capitaine. Par la suite, il pourra inviter des membres dans son équipe."
+      },
+      {
+        "nomNouveaute": "Nouvelle command : `/premier inviteJoueur`",
+        "description": "Permet a un capitaine d'équipe d'envoyer des invitations par messagerie privée (DM) au joueur souhaité, ce dernier pouvant accepter ou refuser."
+      },
+      {
+        "nomNouveaute": "Nouvelle command : `/premier supteam`",
+        "description": "Permet la gestion du cycle de vie des équipes. Elle offre aux capitaines la possibilité de dissoudre leur équipe, libérant ainsi le nom de l'équipe et ses joueurs."
+      }
+    ],
+    "bug": []
+  },
+  {
+    "version": "1.0.2",
+    "nouveau": [
+      {
+        "nomNouveaute": "Nouvelle commande : `/nouveauté`",
+        "description": "Cette commande permet de dÃ©couvrir les dernière¨res nouveautées du GigaBot."
+      },
+      {
+        "nomNouveaute": "Améliorations architecturales du système de sauvegarde du bot :",
+        "description": "Le systéme de stockage est passé d'un format texte brut (.txt) à une structure JSON via la bibliothèque Google Gson. Ce changement abandonne la gestion par lignes concaténées au profit d'une sérialisation d'objets Java.De plus cette structure assure une prévention de la corruption de donnée et une auto-réparation en cas d'erreur"
+      }
+    ],
+    "bug": [
+      {
+        "nomBug": "Conflit de Fuseau Horaire",
+        "description": "Décalage de 2 heures entre l'heure de programmation du rappel d'une game premier et l'exécution réelle du rappel.La cause est que le serveur Oracle Cloud était configuré par défaut sur le fuseau UTC (Londres), tandis que l'utilisateur est en UTC+2 (Paris/Heure d'été).",
+        "resolution": "Synchronisation du serveur en UTC+2 (Paris/Heure d'été)"
+      },
+      {
+        "nomBug": "Corruption et Explosion des fichiers de sauvegarde",
+        "description": "Apparition de milliers de lignes identiques ou de caractères de contrôle parasites (type ^M) dans le fichier de rappel, entraînant un ralentissement critique du bot. Les causes viennent d'abord d'une boucle d'écriture infinie : Présence de processus fantômes écrivant simultanément dans le même fichier.La seconde Cause viens d'un I/O Inefficient : Appel de la méthode de sauvegarde à l'intérieur d'une boucle, provoquant des accés disque trop fréquents et des corruptions de flux.",
+        "resolution": "La sauvegarde est désormais effectuée une seule fois aprés la complétion de la boucle de traitement en mémoire."
+      }
+    ]
   }
 ]

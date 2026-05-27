@@ -34,24 +34,4 @@ public class CommandReport implements CommandExecutor {
             callback.replyModal(modal).queue();
         }
     }
-
-    @Override
-    public String getName() {
-        return "";
-    }
-
-    @Override
-    public String getDescription() {
-        return "";
-    }
-
-    @Override
-    public String getUsage() {
-        return "";
-    }
-
-    @Override
-    public HashMap<Integer, String> getVariation() {
-        return null;
-    }
 }

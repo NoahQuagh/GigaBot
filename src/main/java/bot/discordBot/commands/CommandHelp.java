@@ -12,28 +12,6 @@ import java.util.HashMap;
 import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandHelp implements CommandExecutor {
-    @Override
-    public String getName() {
-        return "help";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Aide utilisateur";
-    }
-
-    @Override
-    public String getUsage() {
-        return "/help <option>";
-    }
-
-    public HashMap<Integer,String> variation = new HashMap<>();
-
-    @Override
-    public HashMap<Integer, String> getVariation() {
-        variation.put(0,"Obtenir la liste des commandes disponible sur le bot_/help all");
-        return variation;
-    }
 
     @Override
     public void run(CommandContext ctx, Command command, String[] args) {

@@ -24,24 +24,4 @@ public class CommandRegistery implements CommandExecutor {
 
         ctx.getSlashEvent().replyModal(modal).queue();
     }
-
-    @Override
-    public String getName() {
-        return "register";
-    }
-
-    @Override
-    public String getDescription() {
-        return "";
-    }
-
-    @Override
-    public String getUsage() {
-        return "";
-    }
-
-    @Override
-    public HashMap<Integer, String> getVariation() {
-        return null;
-    }
 }

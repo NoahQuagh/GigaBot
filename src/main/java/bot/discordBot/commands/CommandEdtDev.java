@@ -88,24 +88,4 @@ public class CommandEdtDev implements CommandExecutor {
     }
 
     public HashMap<Integer,String> variation = new HashMap<>();
-
-    @Override
-    public String getName() {
-        return "";
-    }
-
-    @Override
-    public String getDescription() {
-        return "";
-    }
-
-    @Override
-    public String getUsage() {
-        return "";
-    }
-
-    @Override
-    public HashMap<Integer, String> getVariation() {
-        return null;
-    }
 }

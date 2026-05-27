@@ -15,30 +15,6 @@ import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandBot implements CommandExecutor {
     @Override
-    public String getName() {
-        return "bot";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Information sur le bot";
-    }
-
-    @Override
-    public String getUsage() {
-        return "/bot <option>";
-    }
-
-    public HashMap<Integer,String> variation = new HashMap<>();
-
-    @Override
-    public HashMap<Integer, String> getVariation() {
-        variation.put(0,"Obtenir la version du bot_/bot version");
-        variation.put(1,"Obtenir le(s) développeur(s) du bot_/bot developpeur");
-        return variation;
-    }
-
-    @Override
     public void run(CommandContext ctx, Command command, String[] args) {
         if (ctx.isSlash()) ctx.defer();
         messageBot(ctx);

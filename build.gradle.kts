@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.example"
-version = "1.0"
+version = "1.0.7"
 
 repositories {
     mavenCentral()
@@ -15,6 +15,7 @@ dependencies {
     implementation("org.json:json:20231013")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("net.dv8tion:JDA:5.0.0-beta.24")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.3.3")
 }
 
 application {

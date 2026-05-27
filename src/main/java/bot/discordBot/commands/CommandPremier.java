@@ -37,29 +37,4 @@ public class CommandPremier implements CommandExecutor {
             new CommandPremierNewCapitaine().run(ctx, command, args);
         }
     }
-
-    @Override
-    public String getName() {
-        return "premier";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Commande relative au mode Premier de Valorant";
-    }
-
-    @Override
-    public String getUsage() {
-        return "/premier <option> <arguments>";
-    }
-
-    @Override
-    public HashMap<Integer, String> getVariation() {
-        variation.put(0,"Créer sa team Premier_/premier créerTeam <nomTeam>");
-        variation.put(1,"Supprimer sa team Premier_/premier supTeam");
-        variation.put(2,"Inviter des joueurs dans sa team Premier_/premier inviteJoueur <joueur1> <joueur2> ... <joueur7>");
-        variation.put(3,"Créer un événement pour la team Premier_/premier event <jour format jj> <mois format mm> <année format aaaa> <heure> <minutes>");
-        variation.put(4,"Supprimer un joueurs de sa team Premier_/premier supJoueur <joueur>");
-        return variation;
-    }
 }

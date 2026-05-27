@@ -1,12 +1,10 @@
 package bot.discordBot;
 
 import bot.discordBot.System.RankScheduler;
-import bot.discordBot.utils.ConfigManager;
+import bot.discordBot.utils.BDD.DataBaseManager;
+import bot.discordBot.utils.BDD.LevelLog;
+import bot.discordBot.utils.BDD.log_DB;import bot.discordBot.utils.ConfigManager;
 import bot.discordBot.utils.commands.MessageManager;
-import bot.discordBot.utils.commands.datamanager.DataManager;
-import bot.discordBot.utils.commands.datamanager.DataStructure.Games;
-import bot.discordBot.utils.commands.datamanager.DataStructure.Rappel;
-import bot.discordBot.utils.commands.datamanager.DataStructure.TrackedPlayer;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -33,9 +31,7 @@ import static bot.discordBot.commands.Premier.CommandPremierEvent.netoyageRappel
 import static bot.discordBot.utils.Procedure.ApiProcedure.ApiRiotRequete;
 import static bot.discordBot.utils.Procedure.ApiProcedure.getRankTxtByInt;
 import static bot.discordBot.utils.Success.success.sendRankupMessage;
-import static bot.discordBot.utils.commands.datamanager.DataManager.loadGamesList;
-import static bot.discordBot.utils.commands.datamanager.DataManager.saveGamesList;
-import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
+
 
 public class Main {
 
@@ -50,8 +46,6 @@ public class Main {
      * @throws InterruptedException erreur de connexion
      */
     public static void main(String[] args) throws InterruptedException {
-        entrerNew();
-
         configManager = new ConfigManager(new File(System.getProperty("user.dir"), "config.toml"));
         String token = configManager.getToml().getString("bot.token");
 
@@ -64,24 +58,16 @@ public class Main {
 
         registerCommands();
 
-        writeLogFile("logs.txt", "bot start");
-
-        ArrayList<Games> gamesList = loadGamesList();
-        if (gamesList == null) gamesList = new ArrayList<>();
-
-        for (Guild serve : jda.getGuilds()) {
-            final String serverId = serve.getId();
-            if (gamesList.stream().noneMatch(g -> g.getServeurId().equals(serverId))) {
-                gamesList.add(new Games(serverId));
-                writeLogFile("logs.txt","Nouveau serveur détecté : " + serve.getName());
-            }
-        }
-        saveGamesList(gamesList);
+        log_DB.writeLog(LevelLog.OK, Main.class.getName(),"Bot démarré");
 
         RankScheduler rankScheduler = new RankScheduler();
+
         rankScheduler.startUpdating(jda);
         restoreReminders();
+        log_DB.writeLog(LevelLog.OK, Main.class.getName(),"Restauration des rappels en mémoire réussie");
+
         startTracking();
+        log_DB.writeLog(LevelLog.OK, Main.class.getName(),"Mise à jour du tracking des joueurs réussie");
     }
 
     /**
@@ -159,7 +145,6 @@ public class Main {
                 if (players == null || players.isEmpty()) return;
 
                 for (TrackedPlayer player : players) {
-                    // Logique de tracking identique à ton code original
                     String[] pseudoRaw = player.getPseudoRaw().split("#");
                     HttpResponse<String> response = ApiRiotRequete("https://api.henrikdev.xyz/valorant/v2/mmr/eu/" + pseudoRaw[0] + "/" + pseudoRaw[1]);
 
@@ -176,7 +161,7 @@ public class Main {
                     Thread.sleep(1000);
                 }
             } catch (Exception e) {
-                writeLogFile("logs.txt", "Erreur tracking : " + e.getMessage());
+                log_DB.writeLog(LevelLog.ERR, Main.class.getName(),"Erreur tracking : " + e.getMessage());
             }
         }, 0, 1, TimeUnit.MINUTES);
     }
@@ -196,7 +181,6 @@ public class Main {
         try {
             netoyageRappel();
             ArrayList<Rappel> rappels = DataManager.loadRappels();
-            LocalDateTime now = LocalDateTime.now();
 
             for (Rappel rappel : rappels) {
                 User user = jda.retrieveUserById(rappel.getUserId()).complete();
@@ -210,7 +194,7 @@ public class Main {
                 }
             }
         } catch (Exception e) {
-            writeLogFile("logs.txt", "Error reminders: " + e.getMessage());
+            log_DB.writeLog(LevelLog.ERR, Main.class.getName(),"Erreur reminders : " + e.getMessage());
         }
     }
 
@@ -227,33 +211,4 @@ public class Main {
             channel.sendMessageEmbeds(embed.build()).queue();
         });
     }
-
-    /**
-     * methode tmp pour entreé un changelog ==> automatisation via interface web a implémenté
-     */
-    private static void entrerNew(){
-/*
-        ArrayList<Nouveaute> n1 = new ArrayList<>();
-        n1.add(new Nouveaute("Nouvelle commande : /premier cancelEvent","La commande identifie l'équipe du capitaine et supprime le rappel prévu à la date indiquée."));
-        n1.add(new Nouveaute("Nouvelle command : /premier supJoueur","Permet au capitaine de supprimé de son équipe le joueur mentionné dans la commande."));
-        n1.add(new Nouveaute("Nouvelle command : /premier setTracker","Un système proactif qui surveille les performances des joueurs et annonce les nouveaux records (Peak Rank) dans le salon sur lequel la commande fut envoyée."));
-        n1.add(new Nouveaute("Nouvelle command : /premier delTracker","Suppime le tracking du Peak Rank du joueur indiqué."));
-
-
-        ArrayList<Bug> b1 = new ArrayList<>();
-
-
-        b1.add(new Bug("titre","probleme","solution"));
-
-
-
-
-        ArrayList<StrucNew> paquet = DataManager.loadNew();
-        paquet.add(new StrucNew(version,n1,b1));
-
-        DataManager.saveNew(paquet);
-
-*/
-    }
-
 }

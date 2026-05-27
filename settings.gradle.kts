@@ -1,1 +1,1 @@
-rootProject.name = "BotDiscord"
+rootProject.name = "GigaBot"

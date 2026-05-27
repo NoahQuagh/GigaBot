@@ -78,24 +78,4 @@ public class CommandNew implements CommandExecutor {
 
         ctx.getEvent().getHook().sendMessageEmbeds(embed.build()).queue();
     }
-
-    @Override
-    public String getName() {
-        return "nouveauté";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Affiche toutes les nouveautés de la nouvelle version du bot";
-    }
-
-    @Override
-    public String getUsage() {
-        return "/nouveauté <version>";
-    }
-
-    @Override
-    public HashMap<Integer, String> getVariation() {
-        return null;
-    }
 }

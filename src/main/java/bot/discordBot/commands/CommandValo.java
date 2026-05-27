@@ -19,29 +19,6 @@ import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandValo implements CommandExecutor {
     @Override
-    public String getName() {
-        return "valorant";
-    }
-
-    @Override
-    public String getDescription() {return "Commande relative a valorant";}
-
-    @Override
-    public String getUsage() {
-        return "/valorant <option> <arguments>";
-    }
-
-    public HashMap<Integer,String> variation = new HashMap<>();
-
-    @Override
-    public HashMap<Integer, String> getVariation() {
-        variation.put(0,"Obtenir le rang d'un(e) joueur/joueuse_/valo rank <pseudo#tag>");
-        variation.put(1,"Obtenir les stats d'un(e) joueur/joueuse_/valo stats <pseudo#tag>");
-        return variation;
-    }
-
-
-    @Override
     public void run(CommandContext ctx, Command command, String[] args) {
         try{
             if(args.length >0){
@@ -54,7 +31,7 @@ public class CommandValo implements CommandExecutor {
                 }else if(args[0].equalsIgnoreCase("-deltracker")){
                     new CommandValoDeleteTrack().run(ctx,command,args);
                 }
-            }else throw new SyntaxeException(ctx,"/"+getName()+" <--here");
+            }else throw new SyntaxeException(ctx,"/valorant <--here");
         }catch (SyntaxeException e){
             writeLogFile("logs.txt",ctx.getAuthorName()+" | Code : "+Code.SYNTAXE_INCORRECTE);
         }

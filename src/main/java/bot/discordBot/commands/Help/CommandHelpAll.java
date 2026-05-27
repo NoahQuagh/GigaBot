@@ -18,7 +18,7 @@ public class CommandHelpAll extends CommandHelp {
                     .setColor(Color.GREEN);
 
             for (Command cmd : MessageManager.getRegistry().getCommands()) {
-                embed.addField("","- "+cmd.getDescription()+"```/" + cmd.getId()+"```", false);
+                embed.addField("","- vide```/" + cmd.getId()+"```", false);
             }
             ctx.getEvent().getHook().sendMessageEmbeds(embed.build()).queue();
         }

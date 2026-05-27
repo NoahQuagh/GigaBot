@@ -1,6 +1,8 @@
 package bot.discordBot.utils.Procedure;
 
 import bot.discordBot.Main;
+import bot.discordBot.utils.BDD.LevelLog;
+import bot.discordBot.utils.BDD.log_DB;
 import bot.discordBot.utils.commands.Code;
 import bot.discordBot.utils.commands.CommandContext;
 
@@ -43,9 +45,10 @@ public class ApiProcedure {
                     .header("Accept", "application/json")
                     .timeout(Duration.ofSeconds(10))
                     .build();
+            log_DB.writeLog(LevelLog.OK, ApiProcedure.class.getName(),"Requête API Riot réussie");
             return client.send(request, HttpResponse.BodyHandlers.ofString());
         }catch (Exception e){
-            writeLogFile("logs.txt", ctx.getAuthorName()+" | Code : "+ Code.ERREUR_API);
+            log_DB.writeLog(LevelLog.ERR, Main.class.getName(),"Requête API Riot échoue : "+e);
         }
         return null;
     }
@@ -73,9 +76,10 @@ public class ApiProcedure {
                     .header("Accept", "application/json")
                     .timeout(Duration.ofSeconds(10))
                     .build();
+            log_DB.writeLog(LevelLog.OK, ApiProcedure.class.getName(),"Requête API Riot réussie");
             return client.send(request, HttpResponse.BodyHandlers.ofString());
         }catch (Exception e){
-            writeLogFile("logs.txt", "TrackerValo | Code : "+ Code.ERREUR_API);
+            log_DB.writeLog(LevelLog.ERR, Main.class.getName(),"Requête API Riot échoue : "+e);
         }
         return null;
     }

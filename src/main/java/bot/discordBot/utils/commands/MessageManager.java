@@ -5,6 +5,8 @@ import bot.discordBot.System.ServeurDs;
 import bot.discordBot.commands.*;
 import bot.discordBot.commands.Premier.CommandPremierEvent;
 import bot.discordBot.commands.Premier.CommandPremierTeamInvite;
+import bot.discordBot.utils.BDD.LevelLog;
+import bot.discordBot.utils.BDD.log_DB;
 import bot.discordBot.utils.Exception.ApiException;
 import bot.discordBot.utils.Exception.JoueurException;
 import bot.discordBot.utils.commands.datamanager.DataManager;
@@ -48,7 +50,6 @@ import static bot.discordBot.utils.Procedure.ApiProcedure.ApiRiotRequete;
 import static bot.discordBot.utils.Procedure.ApiProcedure.getColorRankByRankTxt;
 import static bot.discordBot.utils.Procedure.ValoDisProcedure.getPseudosAutocomplete;
 import static bot.discordBot.utils.Procedure.ValoDisProcedure.pseudoValoExist;
-import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 /**
  * Écouteur principal des interactions et des événements du serveur Discord (Listener).
@@ -110,28 +111,6 @@ public class MessageManager extends ListenerAdapter{
     }
 
     private static final String PREFIX = Main.getConfigManager().getToml().getString("bot.prefix");
-
-    /**
-     * methode non utilisable
-     * @param event événement
-     */
-    @Override
-    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        if (event.getAuthor().isBot()) return;
-
-        String message = event.getMessage().getContentRaw();
-        if (message.startsWith("!")) { // Remplace par ton prefix si différent
-            String[] split = message.substring(1).split("\\s+");
-            String alias = split[0].toLowerCase();
-            String[] args = new String[split.length - 1];
-            System.arraycopy(split, 1, args, 0, args.length);
-
-            registry.getByAlias(alias).ifPresent(cmd -> {
-                CommandContext ctx = new CommandContext(event);
-                cmd.getExecutor().run(ctx, cmd, args);
-            });
-        }
-    }
 
     /**
      * Intercepte et gère l'exécution des commandes Slash (`/`) tapées par les utilisateurs.
@@ -245,11 +224,8 @@ public class MessageManager extends ListenerAdapter{
             String body = event.getValue("body").getAsString();
             String user = event.getUser().getName();
 
-            // 1. Log l'info
-            writeLogFile("reports.txt", "REPORT par " + user + " | Sujet: " + subject);
+            log_DB.writeLog(LevelLog.OK, MessageManager.class.getName(),"REPORT par " + user + " | Sujet: " + subject);
 
-            // 2. Envoyer une copie dans un salon spécifique pour les admins
-            // Remplace par l'ID de ton salon de logs/admin
             TextChannel adminChannel = event.getJDA().getTextChannelById("1495129101155958916");
 
             if (adminChannel != null) {
@@ -393,35 +369,8 @@ public class MessageManager extends ListenerAdapter{
      */
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        Guild guild = event.getGuild();
-        Member member = event.getMember();
-
         Role roles = ServeurDs.getOrCreateRole(event.getGuild(),"membre",Color.GRAY);//donne le role membre des l'arrive sur le serve
         event.getGuild().addRoleToMember(event.getMember(), roles).queue();
-
-        TextChannel welcomeChannel = getOrCreateWelcomeChannel(guild);//recup ou crée le channel d'accueil
-
-        if (welcomeChannel != null) {
-            welcomeChannel.upsertPermissionOverride(member)
-                    .setAllowed(Permission.VIEW_CHANNEL, Permission.MESSAGE_HISTORY)
-                    .queue();
-
-            EmbedBuilder eb = new EmbedBuilder()
-                    .setTitle("Bienvenue sur "+event.getGuild().getName()+" !")
-                    .setDescription("Pour accéder au reste du serveur, clique sur un bouton ci-dessous pour configurer ton profil.")
-                    .setThumbnail(event.getUser().getEffectiveAvatarUrl())
-                    .setColor(Color.CYAN);
-
-            welcomeChannel.sendMessage(event.getMember().getAsMention()) // Mentionne le nouveau
-                    .setEmbeds(eb.build())
-                    .addActionRow(
-                            net.dv8tion.jda.api.interactions.components.buttons.Button.success("start_onboarding", "Commencer la configuration"),//revoie au listener de bouton
-                            net.dv8tion.jda.api.interactions.components.buttons.Button.success("dont_start_onboarding", "Non merci")//revoie au listener de bouton -> a faire
-                    )
-                    .queue();
-        } else {
-            writeLogFile("logs.txt", "Salon d'accueil introuvable sur " + event.getGuild().getName());
-        }
     }
 
     /**
@@ -452,9 +401,7 @@ public class MessageManager extends ListenerAdapter{
                 event.replyModal(modal).queue();
             }
 
-            // 2. Parcours automatique des jeux dispo sur le serve
             for (String gameName : values) {
-                // Récupère la couleur configurée pour CE serveur et CE jeu
                 Color gameColor =getColorForGame(guild.getId(), gameName);
 
                 Role role = ServeurDs.getOrCreateRole(guild, gameName, gameColor);

@@ -24,3 +24,4 @@
 [11/05/2026 23:26:34] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.utils.Procedure.ApiProcedure.ApiRiotRequete() >> TrackerValo | Code : ERREUR_API
 [11/05/2026 23:27:11] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.utils.Procedure.ApiProcedure.ApiRiotRequete() >> TrackerValo | Code : ERREUR_API
 [11/05/2026 23:27:42] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.utils.Procedure.ApiProcedure.ApiRiotRequete() >> TrackerValo | Code : ERREUR_API
+[27/05/2026 00:13:08] | /C:/Users/noahq/IdeaProjects/BotDiscord/build/classes/java/main/bot.discordBot.Main.main() >> bot start

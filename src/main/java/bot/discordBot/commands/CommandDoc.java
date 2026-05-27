@@ -41,24 +41,4 @@ public class CommandDoc implements CommandExecutor {
         }
 
     }
-
-    @Override
-    public String getName() {
-        return "doc";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Renvoie la documentation du bot";
-    }
-
-    @Override
-    public String getUsage() {
-        return "";
-    }
-
-    @Override
-    public HashMap<Integer, String> getVariation() {
-        return null;
-    }
 }

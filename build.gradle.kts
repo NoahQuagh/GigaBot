@@ -3,7 +3,7 @@ plugins {
     application
 }
 
-group = "org.example"
+group = "bot.discordBot"
 version = "1.0.7"
 
 repositories {

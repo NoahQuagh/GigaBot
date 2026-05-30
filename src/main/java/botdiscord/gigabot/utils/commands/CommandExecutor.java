@@ -17,5 +17,5 @@ public interface CommandExecutor {
      * @param args    Un tableau de chaînes de caractères ({@code String[]}) représentant les
      * arguments ou options fournis par l'utilisateur lors de la saisie.
      */
-    void run(CommandContext ctx, Command command,String[] args) throws SQLException;
+    void run(CommandContext ctx, Command command,String[] args);
 }

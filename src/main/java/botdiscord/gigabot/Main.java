@@ -31,7 +31,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static botdiscord.gigabot.commandsBot.sousCmdPremierValorant.CommandPremierEvent.netoyageRappel;
 import static botdiscord.gigabot.utils.success.success.sendRankupMessage;
 
 
@@ -188,7 +187,7 @@ public class Main {
      */
     private void restoreReminders() {
         try {
-            netoyageRappel();
+            rappel.netoyageRappel();
             ArrayList<Rappel> rappels = rappel.getEvent();
 
             for (Rappel rappel : rappels) {

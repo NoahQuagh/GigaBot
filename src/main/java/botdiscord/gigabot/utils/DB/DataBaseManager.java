@@ -14,9 +14,14 @@ public abstract class DataBaseManager {
     private Connection db;
     private log_DB logs;
 
-    public DataBaseManager() throws SQLException {
-        this.db = DriverManager.getConnection(URL, USER, PASSWORD);
-        this.logs = new log_DB();
+    public DataBaseManager(){
+        try{
+            this.db = DriverManager.getConnection(URL, USER, PASSWORD);
+            this.logs = new log_DB();
+        }catch (SQLException e){
+            System.err.println(e);
+        }
+
     }
 
     /**

@@ -3,7 +3,6 @@ package botdiscord.gigabot.utils.commands;
 import botdiscord.gigabot.Main;
 import botdiscord.gigabot.commandsBot.cmd.*;
 import botdiscord.gigabot.system.ServeurDs;
-import bot.discordBot.commandsBot.*;
 import botdiscord.gigabot.commandsBot.sousCmdPremierValorant.CommandPremierEvent;
 import botdiscord.gigabot.commandsBot.sousCmdPremierValorant.CommandPremierTeamInvite;
 import botdiscord.gigabot.utils.DB.Valo_Dis_DB;
@@ -36,8 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static bot.discordBot.System.GameConfigRole.getColorForGame;
-import static bot.discordBot.System.GameConfigRole.getGameNameByServeurId;
 import static botdiscord.gigabot.utils.exception.DefaultException.ExceptionDefault;
 
 /**
@@ -163,45 +160,6 @@ public class MessageManager extends ListenerAdapter{
             LocalDateTime dateTimeEvent = LocalDateTime.ofInstant(java.time.Instant.ofEpochSecond(timestamp), ZoneId.of("Europe/Paris"));
             new CommandPremierEvent().validationInvitation(parts[1],parts[2],dateTimeEvent,parts[4],parts[5],parts[0].equals("inviteEv_ac"),event);
         }
-        if (event.getComponentId().equals("start_onboarding")) {
-            event.getMessage().delete().queue();
-
-            String guildId = event.getGuild().getId();
-
-
-            List<String> serverGames = getGameNameByServeurId(guildId);
-
-            StringSelectMenu.Builder menuBuilder = StringSelectMenu.create("choose_games")
-                    .setPlaceholder("Choisis tes jeux...");
-
-            if (serverGames.isEmpty()) {
-                menuBuilder.addOption("Aucun jeu configuré", "none");
-                menuBuilder.setDisabled(true);
-            } else {
-                for (String gameName : serverGames) {
-                    menuBuilder.addOption(gameName, gameName);
-                }
-                int maxChoices = Math.min(serverGames.size(), 5);
-                menuBuilder.setRequiredRange(1, maxChoices);
-            }
-
-            event.reply("À quels jeux joues-tu ?")
-                    .addActionRow(menuBuilder.build())
-                    .setEphemeral(true)
-                    .queue();
-        }
-        if(event.getComponentId().equals("dont_start_onboarding")){
-            event.getMessage().delete().queue(); // On nettoie le salon arrivée
-
-            EmbedBuilder eb = new EmbedBuilder()
-                    .setTitle("Configuration annulée")
-                    .setDescription("Pas de souci ! Tu peux parcourir le serveur librement.")
-                    .addField("Note", "Certains salons de jeux pourraient être masqués tant que tu n'as pas choisi tes rôles.", false)
-                    .addField("Comment faire plus tard ?", "Tu peux utiliser la commande `/registery` si besoin.", false)
-                    .setColor(Color.CYAN);
-
-            event.replyEmbeds(eb.build()).setEphemeral(true).queue();
-        }
     }
 
     /**
@@ -307,8 +265,8 @@ public class MessageManager extends ListenerAdapter{
      */
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        Role roles = ServeurDs.getOrCreateRole(event.getGuild(),"membre",Color.GRAY);//donne le role membre des l'arrive sur le serve
-        event.getGuild().addRoleToMember(event.getMember(), roles).queue();
+        /*Role roles = ServeurDs.getOrCreateRole(event.getGuild(),"membre",Color.GRAY);//donne le role membre des l'arrive sur le serve
+        event.getGuild().addRoleToMember(event.getMember(), roles).queue();*/
     }
 
     /**
@@ -320,44 +278,7 @@ public class MessageManager extends ListenerAdapter{
      */
     @Override
     public void onStringSelectInteraction(StringSelectInteractionEvent event) {
-        if (event.getComponentId().equals("choose_games")) {
-            List<String> values = event.getValues();
-            Member member = event.getMember();
-            Guild guild = event.getGuild();
-            if (guild == null || member == null) return;
 
-            if (values.contains("Valorant") || values.contains("valo")) {
-                TextInput pseudo = TextInput.create("valo_pseudo", "Pseudo Valorant (avec #tag)", TextInputStyle.SHORT)
-                        .setPlaceholder("Pseudo#1234")
-                        .setRequired(true)
-                        .build();
-
-                Modal modal = Modal.create("onboarding_valo", "Ton Pseudo Valorant")
-                        .addComponents(ActionRow.of(pseudo))
-                        .build();
-
-                event.replyModal(modal).queue();
-            }
-
-            for (String gameName : values) {
-                Color gameColor =getColorForGame(guild.getId(), gameName);
-
-                Role role = ServeurDs.getOrCreateRole(guild, gameName, gameColor);
-
-                guild.addRoleToMember(member, role).queue();
-            }
-
-            if (!event.isAcknowledged()) {
-                event.reply("Tes rôles ont été mis à jour !").setEphemeral(true).queue();
-            }
-
-            TextChannel welcomeChannel = guild.getTextChannelsByName("accueil-gigabot", true)
-                    .stream().findFirst().orElse(null);
-
-            if (welcomeChannel != null && welcomeChannel.getPermissionOverride(member) != null) {
-                welcomeChannel.getPermissionOverride(member).delete().queue();
-            }
-        }
     }
 }
 

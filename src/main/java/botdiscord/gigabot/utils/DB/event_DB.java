@@ -6,20 +6,21 @@ import botdiscord.gigabot.utils.exception.TrackingException;
 import botdiscord.gigabot.utils.commands.CommandContext;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class event_DB extends DataBaseManager{
 
-    public event_DB() throws SQLException {
+    public event_DB(){
         super();
     }
 
-    public int setEvent(CommandContext ctx, int team_id, Timestamp date_match, String joueur){
-        if(playerEventExist(joueur,date_match)) throw new TrackingException(ctx,"Ce joueur a déjà rappel de prévu par le bot");
+    public int setEvent(int team_id, LocalDateTime date_match, String joueur){
+        if(playerEventExist(joueur,date_match)) return 0;
         String requete = "INSERT INTO evenements_bot(equipe_id, date_match, cree_par) VALUES (?, ?, ?)";
         try (PreparedStatement preState = getDb().prepareStatement(requete)) {
             preState.setInt(1, team_id);
-            preState.setTimestamp(2, date_match);
+            preState.setObject(2, date_match);
             preState.setString(3, joueur);
             return preState.executeUpdate();
         } catch (SQLException | TrackingException e) {
@@ -47,12 +48,12 @@ public class event_DB extends DataBaseManager{
         return listeRappel;
     }
 
-    public boolean playerEventExist(String joueur,Timestamp date_match){
+    public boolean playerEventExist(String joueur,LocalDateTime date_match){
         String requete = "SELECT cree_par,date_match FROM evenements_bot";
         try (PreparedStatement preState = getDb().prepareStatement(requete);
              java.sql.ResultSet rs = preState.executeQuery()) {
             while (rs.next()) {
-                if(rs.getString("cree_par").equals(joueur) && rs.getTimestamp("date_match").equals(date_match)){
+                if(rs.getString("cree_par").equals(joueur) && rs.getObject("date_match").equals(date_match)){
                     return true;
                 }
             }
@@ -60,6 +61,41 @@ public class event_DB extends DataBaseManager{
         } catch (SQLException e) {
             getLogs().writeLog(LevelLog.ERR,event_DB.class.getName(),"Verification joueur déjà un rappel échoué : "+e);
             return true;
+        }
+    }
+
+    public int netoyageRappel(){
+        String requete = "delete from evenements_bot WHERE date_match < NOW() - INTERVAL 10 MINUTE";
+        try (PreparedStatement preState = getDb().prepareStatement(requete)) {
+            return preState.executeUpdate();
+        } catch (SQLException | TrackingException e) {
+            getLogs().writeLog(LevelLog.ERR,event_DB.class.getName(),"Erreur critique lors du netoyage des rappels : " + e.getMessage());
+            return 0;
+        }
+    }
+
+    public int deleteRappelByPlayer(int equipeId,LocalDateTime dateMatch,String joueur){
+        String requete = "DELETE FROM evenements_bot WHERE equipe_id=? AND date_match=? AND cree_par=?";
+        try (PreparedStatement preState = getDb().prepareStatement(requete)) {
+            preState.setInt(1, equipeId);
+            preState.setObject(2, dateMatch);
+            preState.setString(3, joueur);
+            return preState.executeUpdate();
+        } catch (SQLException | TrackingException e) {
+            getLogs().writeLog(LevelLog.ERR,getClass().getName(),"Erreur critique lors de la suppression du rappel : " + e.getMessage());
+            return 0;
+        }
+    }
+
+    public int deleteRappelForTeam(int equipeId,LocalDateTime dateMatch){
+        String requete = "DELETE FROM evenements_bot WHERE equipe_id=? AND date_match=?";
+        try (PreparedStatement preState = getDb().prepareStatement(requete)) {
+            preState.setInt(1, equipeId);
+            preState.setObject(2, dateMatch);
+            return preState.executeUpdate();
+        } catch (SQLException | TrackingException e) {
+            getLogs().writeLog(LevelLog.ERR,getClass().getName(),"Erreur critique lors de la suppression du rappel : " + e.getMessage());
+            return 0;
         }
     }
 }

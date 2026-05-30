@@ -1,67 +1,73 @@
 package botdiscord.gigabot.commandsBot.sousCmdPremierValorant;
 
 import botdiscord.gigabot.commandsBot.cmd.CommandPremier;
-import botdiscord.gigabot.utils.exception.EquipeException;
-import botdiscord.gigabot.utils.exception.RappelException;
-import bot.discordBot.utils.commands.Code;
+import botdiscord.gigabot.utils.DB.enumDB.LevelLog;
+import botdiscord.gigabot.utils.DB.equipe_DB;
+import botdiscord.gigabot.utils.DB.event_DB;
+import botdiscord.gigabot.utils.DB.log_DB;
+import botdiscord.gigabot.utils.DB.structure.JoueurPremier;
+import botdiscord.gigabot.utils.DB.structure.Rappel;
 import botdiscord.gigabot.utils.commands.Command;
 import botdiscord.gigabot.utils.commands.CommandContext;
-import bot.discordBot.utils.commands.datamanager.DataManager;
-import bot.discordBot.utils.commands.datamanager.DataStructure.Equipe;
-import bot.discordBot.utils.commands.datamanager.DataStructure.Rappel;
+import botdiscord.gigabot.utils.exception.EquipeException;
+import botdiscord.gigabot.utils.exception.RappelException;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 
 import java.awt.*;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import static botdiscord.gigabot.Main.jda;
-import static botdiscord.gigabot.commandsBot.sousCmdPremierValorant.CommandPremierEvent.netoyageRappel;
 import static botdiscord.gigabot.utils.exception.DefaultException.ExceptionDefault;
 import static botdiscord.gigabot.utils.success.success.EventSuccess;
-import static bot.discordBot.utils.commands.Code.AUCUNE_DONNEE_TROUVER;
-import static bot.discordBot.utils.commands.datamanager.DataStructure.Equipe.*;
-import static bot.discordBot.utils.commands.datamanager.logManager.writeLogFile;
 
 public class CommandPremierCancelEvent extends CommandPremier {
+    log_DB logs;
+    event_DB rappels;
+    equipe_DB equipes;
+
+    public CommandPremierCancelEvent(){
+        this.logs=new log_DB();
+        this.equipes=new equipe_DB();
+        this.rappels=new event_DB();
+    }
+
     @Override
     public void run(CommandContext ctx, Command command, String[] args){
-        netoyageRappel();
+        rappels.netoyageRappel();
         if (ctx.isSlash()) ctx.defer();
         try {
-            if (CapitaineNaPasDEquipe(ctx.getAuthorId()))
+            if (equipes.estCapitaine(ctx.getAuthorId()))
                 throw new EquipeException(ctx, "Il existe aucune team Premier dont vous êtes le capitaine");
 
-            String team = getTeamNameByIdCapitaine(ctx.getAuthorId());
-            Equipe equipe = getEquipeByEquipeName(team);
+            String team = equipes.getTeamNameByCapitaineId(ctx.getAuthorId());
+            ArrayList<JoueurPremier> listeJoueur = equipes.getJoueurPremierListByTeamName(team);
 
-            ArrayList<Rappel> tousLesRappels = DataManager.loadRappels();
-            if (tousLesRappels == null || tousLesRappels.isEmpty())
+            ArrayList<Rappel> listeRappels = rappels.getEvent();
+            if (listeRappels == null || listeRappels.isEmpty())
                 throw new RappelException(ctx, "Aucun rappel n'est programmé.");
 
-            execute(ctx, args[1] + ":" + args[2] + ":" + args[3], args[4] + ":" + args[5], getTeamNameByIdAdjoint(ctx.getAuthorId()), equipe,0,"");
+            execute(ctx, args[1] + ":" + args[2] + ":" + args[3], args[4] + ":" + args[5], equipes.getTeamNameByCapitaineId(ctx.getAuthorId()),0,"");
         }catch (EquipeException e){
-            writeLogFile("logs.txt",ctx.getAuthorName()+" | Code : "+ AUCUNE_DONNEE_TROUVER);
+            logs.writeLog(LevelLog.ERR,getClass().getName(),ctx.getAuthorName()+" aucune données trouver : " + e.getMessage());
         }catch (Exception e){
             ExceptionDefault(ctx, "Impossible de supprimer le rappel ( vérifiez la date ) ");
-            writeLogFile("logs.txt", "Code : " + Code.ECHEC + " : " + e);
+            logs.writeLog(LevelLog.ERR,getClass().getName()," Erreur lors de la suppression du rappel : " + e.getMessage());
         }
     }
 
-    public void execute(CommandContext ctx, String date, String heure, String team,Equipe equipe,int n,String salonid){
-        ArrayList<Rappel> rappels = DataManager.loadRappels();
+    public void execute(CommandContext ctx, String date, String heure, String team,int n,String salonid){;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd:MM:yyyy HH:mm");
         LocalDateTime dateTimeEvent = LocalDateTime.parse(date+ " " + heure, formatter);
 
-        rappels.removeIf(rappel ->
-                equipe.getJoueurIds().contains(rappel.getUserId()) &&
-                        rappel.getDate().equals(dateTimeEvent)
-        );
-        DataManager.saveRappels(rappels);
+        rappels.deleteRappelForTeam(equipes.getTeamIdByTeamName(team),dateTimeEvent);
+        ArrayList<JoueurPremier> listeJoueurs = equipes.getJoueurPremierListByTeamName(team);
 
-        for (String idJoueur : equipe.getJoueurIds()) {
+        for (JoueurPremier Joueur : listeJoueurs) {
+            String idJoueur = Joueur.getDiscordId();
             if (idJoueur == null) continue;
 
             String cle = idJoueur.trim() + ":" + dateTimeEvent;

@@ -1,11 +1,16 @@
 package botdiscord.gigabot.commandsBot.sousCmdPremierValorant;
 
 import botdiscord.gigabot.commandsBot.cmd.CommandPremier;
+import botdiscord.gigabot.utils.DB.enumDB.LevelLog;
+import botdiscord.gigabot.utils.DB.equipe_DB;
+import botdiscord.gigabot.utils.DB.event_DB;
+import botdiscord.gigabot.utils.DB.log_DB;
+import botdiscord.gigabot.utils.DB.structure.JoueurPremier;
+import botdiscord.gigabot.utils.commands.Command;
+import botdiscord.gigabot.utils.commands.CommandContext;
 import botdiscord.gigabot.utils.exception.DateException;
 import botdiscord.gigabot.utils.exception.EquipeException;
 import botdiscord.gigabot.utils.exception.SyntaxeException;
-import botdiscord.gigabot.utils.commands.Command;
-import botdiscord.gigabot.utils.commands.CommandContext;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
@@ -14,8 +19,8 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 
-
 import java.awt.*;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -23,7 +28,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static botdiscord.gigabot.Main.jda;
 import static botdiscord.gigabot.utils.exception.DefaultException.ExceptionDefault;
@@ -34,11 +40,20 @@ public class CommandPremierEvent extends CommandPremier {
     public static Map<String, java.util.concurrent.ScheduledFuture<?>> tachesActives = new java.util.concurrent.ConcurrentHashMap<>();
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
     public int nbRefu = 0;//a revoir car pas unique par chaque team et event
+    private log_DB logs;
+    private equipe_DB equipes;
+    private event_DB rappels;
 
-    @SuppressWarnings("unchecked")
+    public CommandPremierEvent(){
+        this.logs=new log_DB();
+        this.equipes=new equipe_DB();
+        this.rappels=new event_DB();
+    }
+
+
     @Override
     public void run(CommandContext ctx, Command command, String[] args) {
-        netoyageRappel();
+        rappels.netoyageRappel();
         try {
             String type = ctx.isSlash()
                     ? ctx.getOptionString("type").orElseThrow(() -> new SyntaxeException(ctx, "/premier event <>"))
@@ -47,23 +62,23 @@ public class CommandPremierEvent extends CommandPremier {
             String channelId = ctx.getChannelId();
             String teamName = null;
 
-            if (!CapitaineNaPasDEquipe(ctx.getAuthorId())) {
-                teamName = getTeamNameByIdCapitaine(ctx.getAuthorId());
-            } else if (!AdjointNaPasDEquipe(ctx.getAuthorId())) {
-                teamName = getTeamNameByIdAdjoint(ctx.getAuthorId());
+            if (!equipes.estCapitaine(ctx.getAuthorId())) {
+                teamName = equipes.getTeamNameByCapitaineId(ctx.getAuthorId());
+            } else if (!equipes.estAdjoint(ctx.getAuthorId())) {
+                teamName = equipes.getTeamNameByAdjointId(ctx.getAuthorId());
             }
 
             if (teamName == null) {
                 throw new EquipeException(ctx, "Il n'existe aucune team Premier dont vous êtes le capitaine ou l'adjoint.");
             }
 
-            Equipe equipe = getEquipeByEquipeName(teamName);
-            if (equipe == null) {
-                throw new EquipeException(ctx, "Erreur interne : l'équipe '" + teamName + "' est introuvable.");
+            ArrayList<JoueurPremier> joueurs = equipes.getJoueurPremierListByTeamName(teamName);
+            if (joueurs == null) {
+                throw new EquipeException(ctx, "Les joueurs de l'équipe '" + teamName + "' sont introuvable.");
             }
 
-            if (equipe.getJoueurIds().size() < 5) {
-                throw new EquipeException(ctx, "Il n'y a pas assez de joueurs dans votre team (minimum 5).");
+            if (joueurs.size() < 5) {
+                throw new EquipeException(ctx, "Il n'y a pas assez de joueurs dans votre team (minimum 5) pour un événement Premier.");
             }
 
             TextInput JourInput = TextInput.create("event_jour", "Jour", TextInputStyle.SHORT)
@@ -112,14 +127,14 @@ public class CommandPremierEvent extends CommandPremier {
             }
 
         }catch (SyntaxeException e){
-            writeLogFile("logs.txt",ctx.getAuthorName()+" | Code : "+ SYNTAXE_INCORRECTE);
+            logs.writeLog(LevelLog.ERR,CommandPremierEvent.class.getName(), ctx.getAuthorName()+" erreur de syntaxe : "+e);
         }catch (DateException e){
-            writeLogFile("logs.txt", ctx.getAuthorName() + SYNTAXE_INCORRECTE);
+            logs.writeLog(LevelLog.ERR,CommandPremierEvent.class.getName(), ctx.getAuthorName()+" erreur de syntaxe horaire : "+e);
         }catch (EquipeException e){
-            writeLogFile("logs.txt",args[3].toLowerCase()+" | Code : "+ AUCUNE_DONNEE_TROUVER);
+            logs.writeLog(LevelLog.ERR,CommandPremierEvent.class.getName(),args[3].toLowerCase()+" aucune données trouver : "+e);
         } catch (Exception e) {
-            writeLogFile("logs.txt","Code : "+ Code.ECHEC+" : "+e);
-            ExceptionDefault(ctx,"Impossible de crée un évènement pour la team Premier "+getTeamNameByIdCapitaine(ctx.getAuthorId()));
+            logs.writeLog(LevelLog.ERR,CommandPremierEvent.class.getName(), " Échec de la commande : "+e);
+            ExceptionDefault(ctx,"Impossible de crée un évènement pour la team Premier");
         }
 
     }
@@ -142,7 +157,7 @@ public class CommandPremierEvent extends CommandPremier {
                     )
                     .queue();
         }, throwable -> {
-            writeLogFile("logs.txt", "Impossible d'envoyer un MP à " + user.getName());
+            logs.writeLog(LevelLog.ERR,CommandPremierEvent.class.getName(), "Impossible d'envoyer un MP à " + user.getName());
         });
     }
 
@@ -176,36 +191,17 @@ public class CommandPremierEvent extends CommandPremier {
         });
     }
 
-    public static void netoyageRappel(){
-        ArrayList<Rappel> rappels = DataManager.loadRappels();
-        if (rappels == null || rappels.isEmpty()) return;
-
-        ZonedDateTime nowParis = ZonedDateTime.now(ZoneId.of("Europe/Paris"));
-
-        boolean aEteModifie = rappels.removeIf(rappel -> {
-            ZonedDateTime dateMatch = rappel.getDate().atZone(ZoneId.of("Europe/Paris"));
-            return dateMatch.plusMinutes(10).isBefore(nowParis);
-        });
-
-        if (aEteModifie) {
-            DataManager.saveRappels(rappels);
-            writeLogFile("logs.txt", "Nettoyage automatique : Rappels expirés supprimés.");
-        }
-    }
-
     public void validationInvitation(String date, String heure,LocalDateTime dateTimeEvent,String team,String salonid,boolean accepte, net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent event){
-        Equipe equipe = getEquipeByEquipeName(team);
+        ArrayList<JoueurPremier> listejoueurs = equipes.getJoueurPremierListByTeamName(team);
         if(accepte){
-            if(nbRefu>=equipe.getJoueurIds().size()-4){
+            if(nbRefu>=listejoueurs.size()-4){
                 event.editMessage("✅ Merci pour ta participation mais l'évènement est annulé dû à un manque de joueurs.")
                         .setEmbeds(new ArrayList<>())
                         .setComponents(new ArrayList<>())
                         .queue();
                 return;
             }
-            ArrayList<Rappel> rappels = DataManager.loadRappels();
-            rappels.add(new Rappel(event.getUser().getId(), dateTimeEvent));
-            DataManager.saveRappels(rappels);
+            rappels.setEvent(equipes.getTeamIdByTeamName(team),dateTimeEvent,event.getUser().getId());
 
             scheduleReminder(event.getUser(), dateTimeEvent);
 
@@ -213,31 +209,32 @@ public class CommandPremierEvent extends CommandPremier {
                     .setComponents(new ArrayList<>())
                     .queue();
 
-            writeLogFile("logs.txt", event.getUser().getName()+"accept the invitation at "+dateTimeEvent+" in "+team);
+            logs.writeLog(LevelLog.OK,getClass().getName(),event.getUser().getName()+"accept the invitation at "+dateTimeEvent+" in "+team);
 
-            String chefId =equipe.getChefId();
+            String chefId=equipes.getCapitaineIdByTeamName(team);
 
             jda.retrieveUserById(chefId).queue(user -> {
                 user.openPrivateChannel().queue(channel -> {
                     channel.sendMessage("✅ **" + event.getUser().getName() + "** a accepté l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**").queue();
                 }, throwable -> {
-                    writeLogFile("logs.txt","Impossible d'envoyer le MP : l'utilisateur a bloqué le bot.");
+                    logs.writeLog(LevelLog.ERR,getClass().getName(),"Impossible d'envoyer le MP : l'utilisateur a bloqué le bot");
                 });
             }, throwable -> {
-                writeLogFile("logs.txt","Utilisateur introuvable pour l'ID : " + event.getUser().getId());
+                logs.writeLog(LevelLog.ERR,getClass().getName(),"Utilisateur introuvable pour l'ID : " + event.getUser().getId());
             });
 
             GuildMessageChannel channel = jda.getChannelById(GuildMessageChannel.class, salonid);
             channel.sendMessage("✅ **" + event.getUser().getName() + "** a accepté l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**").queue();
         }else{
-            if(nbRefu>=equipe.getJoueurIds().size()-4){
+            if(nbRefu>=listejoueurs.size()-4){
                 event.editMessage("❌ Invitation déclinée.")
                         .setEmbeds(new ArrayList<>())
                         .setComponents(new ArrayList<>())
                         .queue();
                 return;
             }
-            String chefId =equipe.getChefId();
+
+            String chefId=equipes.getCapitaineIdByTeamName(team);
 
             event.editMessage("❌ Invitation déclinée.")
                     .setEmbeds(new ArrayList<>())
@@ -248,23 +245,23 @@ public class CommandPremierEvent extends CommandPremier {
                 user.openPrivateChannel().queue(channel -> {
                     channel.sendMessage("❌ **" + event.getUser().getName() + "** a refusé l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**").queue();
                 }, throwable -> {
-                    writeLogFile("logs.txt","Impossible d'envoyer le MP : l'utilisateur a bloqué le bot.");
+                    logs.writeLog(LevelLog.ERR,getClass().getName(),"Impossible d'envoyer le MP : l'utilisateur a bloqué le bot.");
                 });
             }, throwable -> {
-                writeLogFile("logs.txt","Utilisateur introuvable pour l'ID : " + event.getUser().getId());
+                logs.writeLog(LevelLog.ERR,getClass().getName(),"Utilisateur introuvable pour l'ID : " + event.getUser().getId());
             });
 
             GuildMessageChannel channel = jda.getChannelById(GuildMessageChannel.class, salonid);
             channel.sendMessage("❌ **" + event.getUser().getName() + "** a refusé l'invitation pour le match du **"+dateTimeEvent.toString().replace("T"," à ").replace("-","/")+"** dans la team **"+team+"**").queue();
             nbRefu++;
-            if(nbRefu==equipe.getJoueurIds().size()-4){
-                new CommandPremierCancelEvent().execute(null,date.replace("/",":").trim(),heure.trim(),team,equipe,1,salonid);
+            if(nbRefu==listejoueurs.size()-4){
+                new CommandPremierCancelEvent().execute(null,date.replace("/",":").trim(),heure.trim(),team,1,salonid);
             }
-            writeLogFile("logs.txt", event.getUser().getName()+"declined the invitation at "+dateTimeEvent+" in "+team);
+            logs.writeLog(LevelLog.OK,getClass().getName(),event.getUser().getName()+"declined the invitation at "+dateTimeEvent+" in "+team);
         }
     }
 
-    public void execute(CommandContext ctx,String date,String heure,String team,String salonId,String type) throws DateException,EquipeException{
+    public void execute(CommandContext ctx, String date, String heure, String team, String salonId, String type) throws DateException, EquipeException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd:MM:yyyy HH:mm");
         LocalDateTime dateTimeEvent = LocalDateTime.parse(date + " " + heure, formatter);
 
@@ -273,29 +270,24 @@ public class CommandPremierEvent extends CommandPremier {
 
         ZonedDateTime matchTimeParis = dateTimeEvent.atZone(parisZone);
 
-        if (matchTimeParis.isBefore(nowParis))
+        if (matchTimeParis.isBefore(nowParis)) {
             throw new DateException(ctx, "Erreur de date", "Impossible de créer un événement dans le passé", "Heure actuelle (Paris)", nowParis.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        }
 
-        ArrayList<Equipe> equipes = DataManager.loadEquipes();
+        ArrayList<JoueurPremier> listeJoueurs = equipes.getJoueurPremierListByTeamName(team);
+        if (listeJoueurs.isEmpty()) return;
 
+        for (JoueurPremier joueur : listeJoueurs) {
+            String currentId = joueur.getDiscordId();
+            if (currentId == null || currentId.trim().isEmpty()) continue;
 
-        for (Equipe equipe : equipes) {
-            if (equipe.getEquipeId().equalsIgnoreCase(team)) {
-                for (String currentId : equipe.getJoueurIds()) {
-
-                    if (currentId == null || currentId.trim().isEmpty()) continue;
-
-                    jda.retrieveUserById(currentId).queue(user -> {
-                        sendInvitation(ctx,user, date, heure, dateTimeEvent, team,salonId,type);
-                        writeLogFile("logs.txt", currentId + " | invitatiion envoyé à "+currentId);
-
-                    },throwable-> {
-                        writeLogFile("logs.txt", currentId + " | " + AUCUNE_DONNEE_TROUVER);
-                        ExceptionDefault(ctx, "Impossible de crée un évènement pour la team Premier " + team);
-                    });
-                }
-                return;
-            }
+            jda.retrieveUserById(currentId).queue(user -> {
+                sendInvitation(ctx, user, date, heure, dateTimeEvent, team, salonId, type);
+                logs.writeLog(LevelLog.OK, getClass().getName(), "Invitation envoyée à : " + currentId);
+            }, throwable -> {
+                logs.writeLog(LevelLog.ERR, getClass().getName(), "Aucune donnée trouvée pour ce joueur : " + currentId);
+                ExceptionDefault(ctx, "Impossible de créer un événement pour la team Premier " + team);
+            });
         }
     }
 }

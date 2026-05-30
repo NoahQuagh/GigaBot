@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class Valo_Dis_DB extends DataBaseManager{
 
 
-    public Valo_Dis_DB() throws SQLException {
+    public Valo_Dis_DB(){
         super();
     }
 

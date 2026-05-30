@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class log_DB extends DataBaseManager {
 
 
-    public log_DB() throws SQLException {
+    public log_DB(){
         super();
     }
 

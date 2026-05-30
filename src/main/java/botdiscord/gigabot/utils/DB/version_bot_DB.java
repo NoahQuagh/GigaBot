@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class version_bot_DB extends DataBaseManager{
 
-    public version_bot_DB() throws SQLException {
+    public version_bot_DB(){
         super();
     }
 

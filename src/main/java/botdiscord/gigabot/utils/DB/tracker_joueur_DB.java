@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class tracker_joueur_DB extends DataBaseManager{
 
 
-    public tracker_joueur_DB() throws SQLException {
+    public tracker_joueur_DB(){
         super();
     }
 
